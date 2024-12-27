@@ -7,12 +7,12 @@ Begin VB.Form frmPersonAdd
    ClientLeft      =   45
    ClientTop       =   390
    ClientWidth     =   7725
+   KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
    ScaleHeight     =   5970
    ScaleWidth      =   7725
-   ShowInTaskbar   =   0   'False
    StartUpPosition =   3  'Windows Default
 End
 Attribute VB_Name = "frmPersonAdd"

@@ -10,6 +10,7 @@ Module=Logs; Codigo\Logs.bas
 Form=Codigo\frmPersonAdd.frm
 Object={BEC61919-E6C4-11D1-BE7D-C63815000000}#1.0#0; FLEXWIZ.OCX
 Object={5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0; MSFLXGRD.OCX
+Class=CSHA256; Codigo\CSHA256.cls
 IconForm="frmLogin"
 Startup="Sub Main"
 HelpFile=""
