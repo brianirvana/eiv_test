@@ -40,7 +40,7 @@ Dim dbName                      As String
 
 150 Call modDBConnect.DbConnect
 
-160 frmLogin.Show
+160 frmUserLogin.Show
 
 170 On Error GoTo 0
 180 Exit Sub
