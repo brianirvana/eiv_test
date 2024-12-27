@@ -303,14 +303,14 @@ Dim query                       As String
     Dim row                     As Integer
     row = 1
     While Not rs.EOF
-        MSFlexGrid_Persons.AddItem ""
-        MSFlexGrid_Persons.TextMatrix(row, 0) = rs("tipo_documento")
-        MSFlexGrid_Persons.TextMatrix(row, 1) = rs("num_documento")
-        MSFlexGrid_Persons.TextMatrix(row, 2) = rs("nombre_apellido")
-        MSFlexGrid_Persons.TextMatrix(row, 3) = rs("fecha_nacimiento")
-        MSFlexGrid_Persons.TextMatrix(row, 4) = rs("genero")
-        MSFlexGrid_Persons.TextMatrix(row, 5) = rs("localidad")
-        MSFlexGrid_Persons.TextMatrix(row, 6) = rs("codigo_postal")
+        frmAbmPersons.MSFlexGrid_Persons.AddItem ""
+        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 0) = rs("tipo_documento")
+        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 1) = rs("num_documento")
+        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 2) = rs("nombre_apellido")
+        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 3) = rs("fecha_nacimiento")
+        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 4) = rs("genero")
+        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 5) = rs("localidad")
+        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 6) = rs("codigo_postal")
         rs.MoveNext
         row = row + 1
     Wend
