@@ -1,7 +1,8 @@
 VERSION 5.00
 Begin VB.Form frmLogin 
+   BackColor       =   &H00404040&
    BorderStyle     =   4  'Fixed ToolWindow
-   Caption         =   "Login Usuario"
+   Caption         =   "Login de Usuario"
    ClientHeight    =   3960
    ClientLeft      =   45
    ClientTop       =   390
