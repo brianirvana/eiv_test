@@ -22,3 +22,9 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
+Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
+    If KeyCode = 27 Then
+        Unload Me
+    End If
+End Sub
+
