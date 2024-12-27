@@ -276,3 +276,57 @@ ErrorHandler:
 End Sub
 
 
+Private Sub LoadPersonas()
+
+Dim conn                        As ADODB.Connection
+Dim rs                          As ADODB.Recordset
+Dim query                       As String
+
+    On Error GoTo ErrorHandler
+
+    ' Conexión a la base de datos
+    Set conn = New ADODB.Connection
+    conn.ConnectionString = CONNECTION_STRING_DB
+    conn.Open
+
+    ' Query para listar personas
+    query = "SELECT p.id_tipodocumento, t.nombre AS tipo_documento, " & _
+            "p.num_documento, p.nombre_apellido, p.fecha_nacimiento, " & _
+            "p.genero, l.nombre AS localidad, p.codigo_postal " & _
+            "FROM personas p " & _
+            "INNER JOIN tipos_documentos t ON p.id_tipodocumento = t.id_tipodocumento " & _
+            "INNER JOIN localidades l ON p.id_localidad = l.id_localidad"
+
+    Set rs = conn.Execute(query)
+
+    ' Llenar la grilla con los datos
+    Dim row                     As Integer
+    row = 1
+    While Not rs.EOF
+        MSFlexGrid_Persons.AddItem ""
+        MSFlexGrid_Persons.TextMatrix(row, 0) = rs("tipo_documento")
+        MSFlexGrid_Persons.TextMatrix(row, 1) = rs("num_documento")
+        MSFlexGrid_Persons.TextMatrix(row, 2) = rs("nombre_apellido")
+        MSFlexGrid_Persons.TextMatrix(row, 3) = rs("fecha_nacimiento")
+        MSFlexGrid_Persons.TextMatrix(row, 4) = rs("genero")
+        MSFlexGrid_Persons.TextMatrix(row, 5) = rs("localidad")
+        MSFlexGrid_Persons.TextMatrix(row, 6) = rs("codigo_postal")
+        rs.MoveNext
+        row = row + 1
+    Wend
+
+    rs.Close
+    conn.Close
+    Set rs = Nothing
+    Set conn = Nothing
+    Exit Sub
+
+ErrorHandler:
+    MsgBox "Error al cargar personas: " & Err.Description, vbCritical
+    If Not rs Is Nothing Then rs.Close
+    If Not conn Is Nothing Then conn.Close
+    Set rs = Nothing
+    Set conn = Nothing
+End Sub
+
+
