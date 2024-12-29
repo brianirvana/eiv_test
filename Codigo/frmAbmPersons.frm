@@ -112,7 +112,7 @@ Public Sub FormatGrid()
         ' Opcional: Ajustar el ancho de las columnas
 130     .ColWidth(0) = 900   ' Ajustar ancho de la columna de tipo de documento
 140     .ColWidth(1) = 900   ' Ajustar ancho de la columna de número de documento
-150     .ColWidth(2) = 900   ' Ajustar ancho de la columna de nombre y apellido
+150     .ColWidth(2) = 1500   ' Ajustar ancho de la columna de nombre y apellido
 160     .ColWidth(3) = 900   ' Ajustar ancho de la columna de fecha de nacimiento
 170     .ColWidth(4) = 650   ' Ajustar ancho de la columna de género
 180     .ColWidth(5) = 1500  ' Ajustar ancho de la columna de localidad

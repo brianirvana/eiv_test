@@ -176,17 +176,17 @@ Dim tmpUser                     As tUser
 10  On Error GoTo cmdCreateUser_Click_Error
 
 20  tmpUser.UserName = txtUserName.text
-30  tmpUser.FirstName = txtFirstName.text
-40  tmpUser.LastName = txtLastName.text
+30  tmpUser.Person.FirstName = txtFirstName.text
+40  tmpUser.Person.LastName = txtLastName.text
 
 50  If cmbIdDNIType.ListIndex = -1 Then
 60      MsgBox "Por favor, debe seleccionar un tipo de documento."
 70      Exit Sub
 80  End If
 
-90  tmpUser.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
-100 tmpUser.dni = txtDNI.text
-110 tmpUser.Email = txtEmail.text
+90  tmpUser.Person.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
+100 tmpUser.Person.dni = txtDNI.text
+110 tmpUser.Person.Email = txtEmail.text
 120 tmpUser.Password = txtPassword.text
 
 130 If Not ValidateUserCreate(tmpUser, sErrorMsg) Then

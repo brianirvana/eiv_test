@@ -74,34 +74,48 @@ Dim RS                          As ADODB.Recordset
 50  End If
 
     'Validamos la existencia del correo electrónico
-60  If modDB.Exists("personas", "correo_electronico", tmpUser.Email) Then
+60  If modDB.Exists("personas", "correo_electronico", tmpUser.Person.Email) Then
 70      sErrorMsg = "El correo electrónico ya está en uso, por favor utilice otro."
 80      Exit Function
 90  End If
 
-    'Validamos la existencia del DNI
-100 If modDB.Exists("personas", "num_documento", CStr(tmpUser.dni)) Then
-110     sErrorMsg = "El correo electrónico ya está en uso, por favor utilice otro."
-120     Exit Function
-130 End If
+    Dim tmpFields()             As String
+    Dim tmpValues()             As String
 
-140 tmpUser.HashedPwd = cHash.SHA256(tmpUser.Password)
+100 ReDim tmpFields(1 To 2) As String
+110 ReDim tmpValues(1 To 2) As String
+
+120 tmpFields(1) = "id_tipodocumento"
+130 tmpFields(2) = "num_documento"
+
+140 ReDim tmpValues(1 To 2) As String
+150 ReDim tmpValues(1 To 2) As String
+160 tmpValues(1) = tmpUser.Person.id_dni
+170 tmpValues(2) = tmpUser.Person.dni
+
+    'Validamos la existencia del DNI
+180 If modDB.ExistsArr("personas", tmpFields, tmpValues) Then
+190     sErrorMsg = "El dni ya está en uso, por favor utilice otro."
+200     Exit Function
+210 End If
+
+220 tmpUser.HashedPwd = cHash.SHA256(tmpUser.Password)
 
     'Primero insertamos los datos del usuario en la tabla "personas" para garantizar que las claves foráneas requeridas en la tabla "usuarios" (id_tipodocumento, num_documento) existan.
     'Esto evita conflictos de integridad referencial al insertar en la tabla "usuarios".
-150 sQuery = "INSERT INTO personas (id_tipodocumento, num_documento, nombre_apellido, correo_electronico)  VALUES ( " & tmpUser.id_dni & "," & tmpUser.dni & ",'" & tmpUser.FirstName & " " & tmpUser.LastName & "','" & tmpUser.Email & "')"
-160 Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
+230 sQuery = "INSERT INTO personas (id_tipodocumento, num_documento, nombre_apellido, correo_electronico)  VALUES ( " & tmpUser.Person.id_dni & "," & tmpUser.Person.dni & ",'" & tmpUser.Person.FirstName & " " & tmpUser.Person.LastName & "','" & tmpUser.Person.Email & "')"
+240 Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
 
-170 sQuery = "INSERT INTO usuarios (id_tipodocumento, num_documento, nombre_usuario, hashed_pwd)  VALUES ( " & tmpUser.id_dni & "," & tmpUser.dni & ",'" & tmpUser.UserName & "','" & tmpUser.HashedPwd & "')"
-180 Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
+250 sQuery = "INSERT INTO usuarios (id_tipodocumento, num_documento, nombre_usuario, hashed_pwd)  VALUES ( " & tmpUser.Person.id_dni & "," & tmpUser.Person.dni & ",'" & tmpUser.UserName & "','" & tmpUser.HashedPwd & "')"
+260 Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
 
-190 UserCreate = True
+270 UserCreate = True
 
-200 On Error GoTo 0
-210 Exit Function
+280 On Error GoTo 0
+290 Exit Function
 
 UserCreate_Error:
-220 UserCreate = False
-230 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento UserCreate de Módulo modDBUser línea: " & Erl())
+300 UserCreate = False
+310 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento UserCreate de Módulo modDBUser línea: " & Erl())
 
 End Function

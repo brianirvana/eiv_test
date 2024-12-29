@@ -1,0 +1,120 @@
+Attribute VB_Name = "modPerson"
+Option Explicit
+
+Function ValidatePersonCreate(ByRef tmpUser As tUser, ByRef sErrorMsg As String) As Boolean
+
+Dim tmpFields()                 As String
+Dim tmpValues()                 As String
+
+10  On Error GoTo ValidatePersonCreate_Error
+
+20  ReDim tmpFields(1 To 2) As String
+30  ReDim tmpValues(1 To 2) As String
+40  tmpFields(1) = "id_tipodocumento"
+50  tmpFields(2) = "num_documento"
+
+60  ReDim tmpValues(1 To 2) As String
+70  ReDim tmpValues(1 To 2) As String
+80  tmpValues(1) = tmpUser.Person.id_dni
+90  tmpValues(2) = tmpUser.Person.dni
+
+100 If tmpUser.Person.FirstName = "Nombre" Then
+110     sErrorMsg = "Ingrese un nombre personal válido por favor."
+120     Exit Function
+130 ElseIf Not Len(tmpUser.Person.FirstName) > 3 Then
+140     sErrorMsg = "El nombre personal debe contener al menos 3 letras."
+150     Exit Function
+160 ElseIf tmpUser.Person.LastName = "Apellido" Then
+170     sErrorMsg = "Ingrese un apellido válido por favor."
+180     Exit Function
+190 ElseIf Not Len(tmpUser.Person.LastName) > 2 Then
+200     sErrorMsg = "El apellido debe contener al menos 2 letras."
+210     Exit Function
+220 ElseIf CStr(tmpUser.Person.id_dni) = 0 Then
+230     sErrorMsg = "Ingrese un tipo de documento por favor."
+240 ElseIf CStr(tmpUser.Person.dni) = "DNI" Then
+250     sErrorMsg = "Ingrese un DNI válido por favor."
+260     Exit Function
+270 ElseIf Not ValidateDNI(tmpUser.Person.dni) Then
+280     sErrorMsg = "Ingrese un DNI válido por favor (que tenga entre 7 u 8 caracteres y sean sólo números)."
+290     Exit Function
+300 ElseIf ExistsArr("personas", tmpFields, tmpValues) Then
+310     sErrorMsg = "El número y tipo de documentos seleccionados, ya están registrados. La persona ya existe en la base de datos."
+320     Exit Function
+330 ElseIf Not ValidateDateBirth(tmpUser) Then
+340     sErrorMsg = "La fecha de nacimiento parece ser inválida. Utilice el formato DD/MM/YYYY (Ej: 01/05/2001"
+350     Exit Function
+360 End If
+
+370 ValidatePersonCreate = True
+
+380 On Error GoTo 0
+390 Exit Function
+
+ValidatePersonCreate_Error:
+
+400 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidatePersonCreate de Módulo modPerson línea: " & Erl())
+
+End Function
+
+Public Function ValidateDateBirth(ByRef tmpUser As tUser) As Boolean
+
+Dim inputDate                   As String
+Dim day As Integer, month As Integer, year As Integer
+Dim dateValue                   As Date
+
+    ' Obtener el texto del TextBox
+    On Error GoTo ValidateDateBirth_Error
+
+10  inputDate = tmpUser.Person.DateBirth
+
+    ' Asegurarse de que el campo no esté vacío
+20  If Len(inputDate) = 0 Then
+30      ValidateDateBirth = False
+40      Exit Function
+50  End If
+
+    ' Verificar que el formato sea exactamente DD/MM/YYYY
+60  If Len(inputDate) <> 10 Then
+70      ValidateDateBirth = False
+80      Exit Function
+90  End If
+
+    ' Verificar si las posiciones 3 y 6 son las barras (/)
+100 If Mid(inputDate, 3, 1) <> "/" Or Mid(inputDate, 6, 1) <> "/" Then
+110     ValidateDateBirth = False
+120     Exit Function
+130 End If
+
+    ' Extraer el día, mes y año del texto
+140 day = Val(Mid(inputDate, 1, 2))
+150 month = Val(Mid(inputDate, 4, 2))
+160 year = Val(Mid(inputDate, 7, 4))    ' El año debe ser de 4 dígitos
+
+    ' Verificar si el año es válido (es posible que quieras ajustarlo para un rango específico)
+170 If year < 1900 Or year > 2100 Then
+180     ValidateDateBirth = False
+190     Exit Function
+200 End If
+
+    ' Verificar si la fecha es válida
+210 On Error Resume Next
+220 dateValue = DateSerial(year, month, day)
+230 On Error GoTo 0
+
+    ' Si ocurrió un error al crear la fecha, la fecha no es válida
+240 If dateValue = 0 Then
+250     ValidateDateBirth = False
+260 Else
+        ' Si no ocurrió ningún error, la fecha es válida
+270     ValidateDateBirth = True
+280 End If
+
+    On Error GoTo 0
+    Exit Function
+
+ValidateDateBirth_Error:
+
+    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidateDateBirth de Módulo modPerson línea: " & Erl())
+End Function
+

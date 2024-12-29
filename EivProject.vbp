@@ -16,6 +16,7 @@ Module=modUser; Codigo\modUser.bas
 Module=modDBUser; Codigo\modDBUser.bas
 Module=modDB; Codigo\modDB.bas
 Module=modDBPersons; Codigo\modDBPersons.bas
+Module=modPerson; Codigo\modPerson.bas
 IconForm="frmUserLogin"
 Startup="Sub Main"
 HelpFile=""

@@ -3,15 +3,27 @@ Option Explicit
 
 'Public aUser                    As tUser
 
+'Esto debería ir en modPerson, pero debido a las dependencias circulares de vb6 no fue posible.
+Public Type tPerson
+    id_dni                      As Long         'Tipo documento
+    dni                         As Long         'DNI Número
+    FirstName                   As String       'Nombre
+    LastName                    As String       'Apellido
+    DateBirth                   As String       'Fecha nacimiento
+    Genre                       As String * 1   'Género
+    is_argentine                As Boolean      'Es argentino?
+    Email                       As String       'Correo electrónico
+    pic_face                    As Variant      'Foto cara
+    id_locality                 As Long         'Localidad
+    id_state                    As Long         'Provincia
+    zip_code                    As Long         'Codigo Postal
+End Type
+
 Public Type tUser
     UserName                    As String
-    FirstName                   As String
-    LastName                    As String
-    Email                       As String
     Password                    As String
     HashedPwd                   As String
-    dni                         As Long
-    id_dni                      As Long
+    Person                      As tPerson
 End Type
 
 '---------------------------------------------------------------------------------------
@@ -208,8 +220,8 @@ Dim tmpValues()                 As String
 
 60  ReDim tmpValues(1 To 2) As String
 70  ReDim tmpValues(1 To 2) As String
-80  tmpValues(1) = tmpUser.id_dni
-90  tmpValues(2) = tmpUser.dni
+80  tmpValues(1) = tmpUser.Person.id_dni
+90  tmpValues(2) = tmpUser.Person.dni
 
 100 If tmpUser.UserName = "Usuario" Then
 110     sErrorMsg = "Ingrese un nombre de usuario válido por favor."
@@ -217,21 +229,21 @@ Dim tmpValues()                 As String
 130 ElseIf Not Len(tmpUser.UserName) > 3 Then
 140     sErrorMsg = "El nombre de usuario debe contener al menos 3 letras."
 150     Exit Function
-160 ElseIf tmpUser.FirstName = "Nombre" Then
+160 ElseIf tmpUser.Person.FirstName = "Nombre" Then
 170     sErrorMsg = "Ingrese un nombre personal válido por favor."
 180     Exit Function
-190 ElseIf Not Len(tmpUser.FirstName) > 3 Then
+190 ElseIf Not Len(tmpUser.Person.FirstName) > 3 Then
 200     sErrorMsg = "El nombre personal debe contener al menos 3 letras."
 210     Exit Function
-220 ElseIf tmpUser.LastName = "Apellido" Then
+220 ElseIf tmpUser.Person.LastName = "Apellido" Then
 230     sErrorMsg = "Ingrese un apellido válido por favor."
 240     Exit Function
-250 ElseIf CStr(tmpUser.id_dni) = 0 Then
+250 ElseIf CStr(tmpUser.Person.id_dni) = 0 Then
 260     sErrorMsg = "Ingrese un tipo de documento por favor."
-270 ElseIf CStr(tmpUser.dni) = "DNI" Then
+270 ElseIf CStr(tmpUser.Person.dni) = "DNI" Then
 280     sErrorMsg = "Ingrese un DNI válido por favor."
 290     Exit Function
-300 ElseIf Not ValidateDNI(tmpUser.dni) Then
+300 ElseIf Not ValidateDNI(tmpUser.Person.dni) Then
 310     sErrorMsg = "Ingrese un DNI válido por favor (que tenga entre 7 u 8 caracteres y sean sólo números)."
 320     Exit Function
 330 ElseIf ExistsArr("personas", tmpFields, tmpValues) Then

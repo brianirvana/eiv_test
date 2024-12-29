@@ -34,7 +34,7 @@ Public Sub LoadPersonas()
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 0) = RS("tipo_documento")
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 1) = RS("num_documento")
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 2) = RS("nombre_apellido")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 3) = RS("fecha_nacimiento")
+        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 3) = RS("fecha_nacimiento") & vbNullString
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 4) = RS("genero")
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 5) = RS("localidad") & " - " & RS("provincia")
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 6) = RS("codigo_postal")
@@ -154,6 +154,49 @@ LoadStates_Error:
 
 End Sub
 
+'---------------------------------------------------------------------------------------
+' Procedure : GetZipCodeFromLocality
+' Author    : [/About] Brian Sabatier https://github.com/brianirvana
+' Date      : 29/12/2024
+' Purpose   :
+'---------------------------------------------------------------------------------------
+'
+Function GetZipCodeFromLocality(ByRef tmpUser As tUser, ByRef sErrorMsg As String) As Long
+
+Dim sQuery                      As String
+Dim RS                          As ADODB.Recordset
+
+10  On Error GoTo GetZipCodeFromLocality_Error
+
+20  sQuery = "SELECT codigo_postal FROM localidades WHERE id_localidad = " & tmpUser.Person.id_locality
+
+    ' Ejecutar la consulta y abrir un Recordset
+30  Set RS = New ADODB.Recordset
+40  RS.Open sQuery, cn, adOpenForwardOnly, adLockReadOnly
+
+50  If Not RS.EOF Then
+60      GetZipCodeFromLocality = Val(RS.Fields("codigo_postal"))
+        RS.Close
+        Set RS = Nothing
+        Exit Function
+70  Else
+80      sErrorMsg = "Error al intentar obtener el código postal de la localidad seleccionada."
+90      Exit Function
+100 End If
+
+140 On Error GoTo 0
+150 Exit Function
+
+GetZipCodeFromLocality_Error:
+
+110 GetZipCodeFromLocality = -1
+120 RS.Close
+130 Set RS = Nothing
+
+160 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento GetZipCodeFromLocality de Módulo modDBPersons línea: " & Erl())
+
+End Function
+
 Public Sub LoadLocality(ByRef tmpForm As Form)
 
 Dim sQuery                      As String
@@ -203,3 +246,59 @@ LoadLocality_Error:
     Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento LoadLocality de Módulo modDBPersons línea: " & Erl())
 
 End Sub
+
+Function PersonCreate(ByRef tmpUser As tUser, ByRef sErrorMsg As String) As Boolean
+
+Dim sQuery                      As String
+Dim cHash                       As New CSHA256
+Dim RS                          As ADODB.Recordset
+
+    'Validamos la existencia del nombre de usuario
+10  On Error GoTo PersonCreate_Error
+
+    'Puede existir una persona con el mismo nombre...
+    '20  If modDB.Exists("personas", "nombre_apellido", tmpUser.Person.FirstName & " " & tmpUser.Person.LastName) Then
+    '30      sErrorMsg = "El nombre y apellido elegido ya están en uso, por favor utilice otro."
+    '40      Exit Function
+    '50  End If
+
+    'Validamos la existencia del correo electrónico
+20  If modDB.Exists("personas", "correo_electronico", tmpUser.Person.Email) Then
+30      sErrorMsg = "El correo electrónico ya está en uso, por favor utilice otro."
+40      Exit Function
+50  End If
+
+60  ReDim tmpFields(1 To 2) As String
+70  ReDim tmpValues(1 To 2) As String
+
+80  tmpFields(1) = "id_tipodocumento"
+90  tmpFields(2) = "num_documento"
+
+100 ReDim tmpValues(1 To 2) As String
+110 ReDim tmpValues(1 To 2) As String
+120 tmpValues(1) = tmpUser.Person.id_dni
+130 tmpValues(2) = tmpUser.Person.dni
+
+    'Validamos la existencia del DNI
+140 If modDB.ExistsArr("personas", tmpFields, tmpValues) Then
+150     sErrorMsg = "El dni ya está en uso, por favor utilice otro."
+160     Exit Function
+170 End If
+
+180 tmpUser.HashedPwd = cHash.SHA256(tmpUser.Password)
+
+    'Primero insertamos los datos del usuario en la tabla "personas" para garantizar que las claves foráneas requeridas en la tabla "usuarios" (id_tipodocumento, num_documento) existan.
+    'Esto evita conflictos de integridad referencial al insertar en la tabla "usuarios".
+190 sQuery = "INSERT INTO personas (id_tipodocumento, num_documento, nombre_apellido, fecha_nacimiento, genero, es_argentino, correo_electronico, id_localidad, codigo_postal)  VALUES ( " & tmpUser.Person.id_dni & "," & tmpUser.Person.dni & ",'" & tmpUser.Person.FirstName & " " & tmpUser.Person.LastName & "','" & tmpUser.Person.DateBirth & "','" & tmpUser.Person.Genre & "'," & IIf(CBool(tmpUser.Person.is_argentine), 1, 0) & ",'" & tmpUser.Person.Email & "'," & tmpUser.Person.id_locality & "," & tmpUser.Person.zip_code & ")"
+200 Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
+
+230 PersonCreate = True
+
+240 On Error GoTo 0
+250 Exit Function
+
+PersonCreate_Error:
+260 PersonCreate = False
+270 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento PersonCreate de Módulo modDBUser línea: " & Erl())
+
+End Function
