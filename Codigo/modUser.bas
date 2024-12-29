@@ -257,7 +257,6 @@ ValidateUserCreate_Error:
 
 End Function
 
-
 '---------------------------------------------------------------------------------------
 ' Procedure : ValidateDNI
 ' Author    : [/About] Brian Sabatier https://github.com/brianirvana
@@ -314,8 +313,9 @@ Public Function CheckTxtControlMouseDown(ByRef txtControl As TextBox)
 
     On Error GoTo CheckTxtControlMouseDown_Error
 
-    If txtControl.Text = "Usuario" Or txtControl.Text = "Nombre" Or txtControl.Text = "Apellido" Or txtControl.Text = "DNI" Or txtControl.Text = "Contraseña" Or txtControl.Text = "E-mail" Then
-        txtControl.Text = vbNullString
+    If txtControl.text = "Usuario" Or txtControl.text = "Nombre" Or txtControl.text = "Apellido" Or txtControl.text = "DNI" _
+    Or txtControl.text = "Contraseña" Or txtControl.text = "E-mail" Or txtControl.text = "Fecha nacimiento" Then
+        txtControl.text = vbNullString
     End If
 
     On Error GoTo 0
@@ -338,19 +338,23 @@ Public Function CheckTxtControlMouseUp(ByRef txtControl As TextBox)
 
     On Error GoTo CheckTxtControlMouseUp_Error
 
-    If StrComp(UCase$(txtControl.Text), vbNullString) = 0 Or StrComp(UCase$(txtControl.Text), " ") = 0 Then
+    If StrComp(UCase$(txtControl.text), vbNullString) = 0 Or StrComp(UCase$(txtControl.text), " ") = 0 Then
         If txtControl.Name = "txtUserName" Then
-            txtControl.Text = "Usuario"
+            txtControl.text = "Usuario"
         ElseIf txtControl.Name = "txtFirstName" Then
-            txtControl.Text = "Nombre"
+            txtControl.text = "Nombre"
         ElseIf txtControl.Name = "txtLastName" Then
-            txtControl.Text = "Apellido"
+            txtControl.text = "Apellido"
         ElseIf txtControl.Name = "txtDNI" Then
-            txtControl.Text = "DNI"
+            txtControl.text = "DNI"
         ElseIf txtControl.Name = "txtPassword" Then
-            txtControl.Text = "Contraseña"
+            txtControl.text = "Contraseña"
         ElseIf txtControl.Name = "txtEmail" Then
-            txtControl.Text = "E-mail"
+            txtControl.text = "E-mail"
+        ElseIf txtControl.Name = "txtDateBirth" Then
+            txtControl.MaxLength = 20
+            txtControl.text = "Fecha nacimiento"
+            txtControl.MaxLength = 10
         End If
         Exit Function
     End If

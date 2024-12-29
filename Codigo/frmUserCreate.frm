@@ -14,6 +14,14 @@ Begin VB.Form frmUserCreate
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   384
    StartUpPosition =   1  'CenterOwner
+   Begin VB.CommandButton cmdClose 
+      Caption         =   "X"
+      Height          =   255
+      Left            =   5400
+      TabIndex        =   10
+      Top             =   120
+      Width           =   255
+   End
    Begin VB.ComboBox cmbIdDNIType 
       Appearance      =   0  'Flat
       BackColor       =   &H00000000&
@@ -137,15 +145,20 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Sub cmbIdDNIType_GotFocus()
-    If Len(cmbIdDNIType.Text) > 0 Then
+    If Len(cmbIdDNIType.text) > 0 Then
         txtDNI.Enabled = True
     End If
 End Sub
 
 Private Sub cmbIdDNIType_LostFocus()
-    If Len(cmbIdDNIType.Text) > 0 Then
+    If Len(cmbIdDNIType.text) > 0 Then
         txtDNI.Enabled = True
     End If
+End Sub
+
+Private Sub cmdClose_Click()
+    frmUserLogin.Show
+    Unload Me
 End Sub
 
 '---------------------------------------------------------------------------------------
@@ -162,9 +175,9 @@ Dim tmpUser                     As tUser
 
 10  On Error GoTo cmdCreateUser_Click_Error
 
-20  tmpUser.UserName = txtUserName.Text
-30  tmpUser.FirstName = txtFirstName.Text
-40  tmpUser.LastName = txtLastName.Text
+20  tmpUser.UserName = txtUserName.text
+30  tmpUser.FirstName = txtFirstName.text
+40  tmpUser.LastName = txtLastName.text
 
 50  If cmbIdDNIType.ListIndex = -1 Then
 60      MsgBox "Por favor, debe seleccionar un tipo de documento."
@@ -172,14 +185,14 @@ Dim tmpUser                     As tUser
 80  End If
 
 90  tmpUser.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
-100 tmpUser.dni = txtDNI.Text
-110 tmpUser.Email = txtEmail.Text
-120 tmpUser.Password = txtPassword.Text
+100 tmpUser.dni = txtDNI.text
+110 tmpUser.Email = txtEmail.text
+120 tmpUser.Password = txtPassword.text
 
 130 If Not ValidateUserCreate(tmpUser, sErrorMsg) Then
 140     Call MsgBox(sErrorMsg, vbInformation, "Error, por favor revise la información ingresada.")
 150 Else
-160     If modDBUser.CreateUser(tmpUser, sErrorMsg) Then
+160     If modDBUser.UserCreate(tmpUser, sErrorMsg) Then
 170         Call MsgBox("Nuevo usuario del sistema creado con éxito.", vbInformation, "¡Exito!")
 180         frmUserLogin.Show
 190         Me.Hide
@@ -209,51 +222,20 @@ Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub Form_Load()
-Dim sQuery                      As String
-Dim RS                          As ADODB.Recordset
-Dim cmbIndex                    As Long
 
-    ' Consulta para obtener los datos de tipos_documentos
-    sQuery = "SELECT id_tipodocumento, nombre, abreviatura FROM tipos_documentos"
-
-    ' Ejecutar la consulta y abrir un Recordset
-    Set RS = New ADODB.Recordset
-    RS.Open sQuery, cn, adOpenForwardOnly, adLockReadOnly
-
-    ' Limpiar el ComboBox antes de cargar datos
-    cmbIdDNIType.Clear
-
-    ' Validar si hay registros en el Recordset
-    If Not RS.EOF Then
-        Do While Not RS.EOF
-            ' Agregar el ítem al ComboBox con el formato "nombre - abreviatura"
-            cmbIdDNIType.AddItem RS.Fields("nombre").Value & " - " & RS.Fields("abreviatura").Value
-
-            ' Obtener el índice del ítem agregado
-            cmbIndex = cmbIdDNIType.NewIndex
-
-            ' Asignar el id_tipodocumento al ItemData del ítem actual
-            cmbIdDNIType.ItemData(cmbIndex) = RS.Fields("id_tipodocumento").Value
-
-            ' Avanzar al siguiente registro
-            RS.MoveNext
-        Loop
-    End If
-
-    ' Cerrar el Recordset
-    RS.Close
-    Set RS = Nothing
+    Call modDBPersons.LoadDNITypes(Me)
+    
 End Sub
 
 Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    If Len(cmbIdDNIType.Text) > 0 And Not txtDNI.Enabled Then
+    If Len(cmbIdDNIType.text) > 0 And Not txtDNI.Enabled Then
         txtDNI.Enabled = True
     End If
 End Sub
 
 Private Sub txtDNI_Change()
-    If Len(txtDNI.Text) > 1000 Then
-        txtDNI.Text = NumberToPunctuatedString(txtDNI.Text)
+    If Len(txtDNI.text) > 1000 Then
+        txtDNI.text = NumberToPunctuatedString(txtDNI.text)
     End If
 End Sub
 
@@ -266,7 +248,7 @@ Private Sub txtDNI_KeyPress(KeyAscii As Integer)
 End Sub
 
 Private Sub txtEmail_Change()
-    If Not CheckMailString(txtEmail.Text) Then
+    If Not CheckMailString(txtEmail.text) Then
         lblInfo.Caption = "El e-mail parece ser inválido."
     Else
         lblInfo.Caption = ""
@@ -289,23 +271,11 @@ Private Sub txtFirstName_KeyPress(KeyAscii As Integer)
 End Sub
 
 Private Sub txtPassword_Change()
-    If Len(txtPassword.Text) < 6 Then
+    If Len(txtPassword.text) < 6 Then
         frmUserCreate.lblInfo.Caption = "La contraseña debe tener como mínimo 6 caracteres, máximo 32, debe contener al menos una letra y un número."
     Else
         frmUserCreate.lblInfo.Caption = ""
     End If
-End Sub
-
-Private Sub txtDNI_LostFocus()
-    Call CheckTxtControlMouseUp(txtUserName)
-End Sub
-
-Private Sub txtEmail_LostFocus()
-    Call CheckTxtControlMouseUp(txtUserName)
-End Sub
-
-Private Sub txtFirstName_LostFocus()
-    Call CheckTxtControlMouseUp(txtUserName)
 End Sub
 
 Private Sub txtUserName_KeyPress(KeyAscii As Integer)
@@ -319,16 +289,28 @@ Private Sub txtUserName_KeyPress(KeyAscii As Integer)
     
 End Sub
 
+Private Sub txtDNI_LostFocus()
+    Call CheckTxtControlMouseUp(txtDNI)
+End Sub
+
+Private Sub txtEmail_LostFocus()
+    Call CheckTxtControlMouseUp(txtEmail)
+End Sub
+
+Private Sub txtFirstName_LostFocus()
+    Call CheckTxtControlMouseUp(txtFirstName)
+End Sub
+
 Private Sub txtUserName_LostFocus()
     Call CheckTxtControlMouseUp(txtUserName)
 End Sub
 
 Private Sub txtPassword_LostFocus()
-    Call CheckTxtControlMouseUp(txtUserName)
+    Call CheckTxtControlMouseUp(txtPassword)
 End Sub
 
 Private Sub txtLastName_LostFocus()
-    Call CheckTxtControlMouseUp(txtUserName)
+    Call CheckTxtControlMouseUp(txtLastName)
 End Sub
 
 Private Sub txtLastName_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)

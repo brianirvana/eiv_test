@@ -21,7 +21,7 @@ Dim RS                          As ADODB.Recordset
 20  tmpHashedPwd = cHash.SHA256(tmpUser.Password)
 
 30  sQuery = "SELECT hashed_pwd FROM usuarios WHERE nombre_usuario = '" & tmpUser.UserName & "'"
-40  Set RS = CN.Execute(sQuery, , adOpenForwardOnly)
+40  Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
 
 50  If RS.EOF Or RS.BOF Then
 60      sErrorMsg = "El usuario no existe. Por favor, cree un nuevo usuario."
@@ -59,14 +59,14 @@ End Function
 ' Purpose   :
 '---------------------------------------------------------------------------------------
 '
-Function CreateUser(ByRef tmpUser As tUser, ByRef sErrorMsg As String) As Boolean
+Function UserCreate(ByRef tmpUser As tUser, ByRef sErrorMsg As String) As Boolean
 
 Dim sQuery                      As String
 Dim cHash                       As New CSHA256
 Dim RS                          As ADODB.Recordset
 
     'Validamos la existencia del nombre de usuario
-10  On Error GoTo CreateUser_Error
+10  On Error GoTo UserCreate_Error
 
 20  If modDB.Exists("usuarios", "nombre_usuario", tmpUser.UserName) Then
 30      sErrorMsg = "El usuario elegido ya está en uso, por favor utilice otro."
@@ -90,18 +90,18 @@ Dim RS                          As ADODB.Recordset
     'Primero insertamos los datos del usuario en la tabla "personas" para garantizar que las claves foráneas requeridas en la tabla "usuarios" (id_tipodocumento, num_documento) existan.
     'Esto evita conflictos de integridad referencial al insertar en la tabla "usuarios".
 150 sQuery = "INSERT INTO personas (id_tipodocumento, num_documento, nombre_apellido, correo_electronico)  VALUES ( " & tmpUser.id_dni & "," & tmpUser.dni & ",'" & tmpUser.FirstName & " " & tmpUser.LastName & "','" & tmpUser.Email & "')"
-160 Set RS = CN.Execute(sQuery, , adOpenForwardOnly)
+160 Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
 
 170 sQuery = "INSERT INTO usuarios (id_tipodocumento, num_documento, nombre_usuario, hashed_pwd)  VALUES ( " & tmpUser.id_dni & "," & tmpUser.dni & ",'" & tmpUser.UserName & "','" & tmpUser.HashedPwd & "')"
-180 Set RS = CN.Execute(sQuery, , adOpenForwardOnly)
+180 Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
 
-190 CreateUser = True
+190 UserCreate = True
 
 200 On Error GoTo 0
 210 Exit Function
 
-CreateUser_Error:
-220 CreateUser = False
-230 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento CreateUser de Módulo modDBUser línea: " & Erl())
+UserCreate_Error:
+220 UserCreate = False
+230 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento UserCreate de Módulo modDBUser línea: " & Erl())
 
 End Function

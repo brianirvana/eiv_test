@@ -57,7 +57,7 @@ Begin VB.Form frmUserLogin
       Left            =   1440
       PasswordChar    =   "#"
       TabIndex        =   1
-      Text            =   "Contraseña"
+      Text            =   "3421321.Staff"
       Top             =   960
       Width           =   2895
    End
@@ -69,7 +69,7 @@ Begin VB.Form frmUserLogin
       Height          =   375
       Left            =   1440
       TabIndex        =   0
-      Text            =   "Usuario"
+      Text            =   "admin"
       Top             =   480
       Width           =   2895
    End
@@ -117,7 +117,7 @@ Private Sub cmdUserCreate_Click()
 End Sub
 
 Private Sub cmdClose_Click()
-End
+    End
 End Sub
 
 Private Sub cmdLogin_Click()
@@ -137,6 +137,7 @@ Dim tmpUser                     As tUser
         End If
         
         frmAbmPersons.Show
+        Me.Hide
     End If
 
 End Sub
@@ -148,6 +149,10 @@ Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
 End Sub
 
 Private Sub txtUserName_KeyPress(KeyAscii As Integer)
+
+    If KeyAscii = 13 Then
+        txtUserPassword.SetFocus
+    End If
 
     If (KeyAscii <> 8) Then
         ' Verificar si el carácter no es una letra (minúscula o mayúscula)
@@ -186,6 +191,12 @@ txtUserName_MouseUp_Error:
 
     Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento txtUserName_MouseUp de Formulario frmUserLogin línea: " & Erl())
 
+End Sub
+
+Private Sub txtUserPassword_KeyPress(KeyAscii As Integer)
+    If KeyAscii = 13 Then
+        Call cmdLogin_Click
+    End If
 End Sub
 
 Private Sub txtUserPassword_LostFocus()
