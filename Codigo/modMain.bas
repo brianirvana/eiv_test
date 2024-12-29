@@ -23,30 +23,32 @@ Dim dbName                      As String
 
 10  On Error GoTo Main_Error
 
-20  IsDBAlreadyExists = Val(GetSetting(App.Path, "EIV_SOFTWARE", "IsDBAlreadyExists"))
+20  Call modDBConnect.LoadDBConfig
 
-30  dbName = "EIV"
-40  If Not IsDBAlreadyExists Then
-50      If Not DBExists(dbName) Then
-60          If Not modDBConnect.DBCreate(dbName) Then
-70              End
-80          Else
-90              Call modDBConnect.DbConnect
-100             Call modDBConnect.CreateTables
-110             Call modDBConnect.SeedDatabase
-120         End If
-130     End If
-140 End If
+30  IsDBAlreadyExists = Val(GetSetting(App.Path, "EIV_SOFTWARE", "IsDBAlreadyExists"))
 
-150 Call modDBConnect.DbConnect
+40  dbName = "EIV"
+50  If Not IsDBAlreadyExists Then
+60      If Not DBExists(dbName) Then
+70          If Not modDBConnect.DBCreate(dbName) Then
+80              End
+90          Else
+100             Call modDBConnect.DbConnect
+110             Call modDBConnect.CreateTables
+120             Call modDBConnect.SeedDatabase
+130         End If
+140     End If
+150 End If
 
-160 frmUserLogin.Show
+160 Call modDBConnect.DbConnect
 
-170 On Error GoTo 0
-180 Exit Sub
+170 frmUserLogin.Show
+
+180 On Error GoTo 0
+190 Exit Sub
 
 Main_Error:
 
-190 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento Main de Módulo modMain línea: " & Erl())
+200 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento Main de Módulo modMain línea: " & Erl())
 
 End Sub

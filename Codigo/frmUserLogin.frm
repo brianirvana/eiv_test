@@ -1,11 +1,11 @@
 VERSION 5.00
 Begin VB.Form frmUserLogin 
    BackColor       =   &H00404040&
-   BorderStyle     =   4  'Fixed ToolWindow
+   BorderStyle     =   0  'None
    Caption         =   "Login de Usuario"
    ClientHeight    =   3960
-   ClientLeft      =   45
-   ClientTop       =   390
+   ClientLeft      =   0
+   ClientTop       =   0
    ClientWidth     =   5700
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
@@ -15,8 +15,24 @@ Begin VB.Form frmUserLogin
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   380
    StartUpPosition =   1  'CenterOwner
-   Begin VB.CommandButton cmdAccountCreate 
-      Caption         =   "Crear cuenta"
+   Begin VB.CommandButton cmdDeleteDB 
+      Caption         =   "Delete DB"
+      Height          =   255
+      Left            =   2280
+      TabIndex        =   6
+      Top             =   120
+      Width           =   1455
+   End
+   Begin VB.CommandButton cmdClose 
+      Caption         =   "X"
+      Height          =   255
+      Left            =   5280
+      TabIndex        =   5
+      Top             =   240
+      Width           =   255
+   End
+   Begin VB.CommandButton cmdUserCreate 
+      Caption         =   "Crear usuario"
       Height          =   615
       Left            =   1440
       TabIndex        =   4
@@ -84,17 +100,62 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
-Private Sub cmdAccountCreate_Click()
+Private Sub cmdDeleteDB_Click()
+
+    If MsgBox("¿Está seguro que desea eliminar la base de datos " & cDB.dbName & "?", vbOKCancel) = vbOK Then
+        Call SaveSetting(App.Path, "EIV_SOFTWARE", "IsDBAlreadyExists", "0")
+        Call modDBConnect.DropDatabase(cDB.dbName)
+    End If
+
+End Sub
+
+Private Sub cmdUserCreate_Click()
 
     frmUserCreate.Show
     Me.Hide
 
 End Sub
 
+Private Sub cmdClose_Click()
+End
+End Sub
+
+Private Sub cmdLogin_Click()
+
+Dim sErrorMsg                   As String
+Dim tmpUser                     As tUser
+
+    tmpUser.UserName = txtUserName.Text
+    tmpUser.Password = txtUserPassword.Text
+
+    If Not ValidateUserLogin(tmpUser, sErrorMsg) Then
+        Call MsgBox(sErrorMsg, vbInformation, "Error, por favor revise la información ingresada.")
+    Else
+        If Not ValidateDBPassword(tmpUser, sErrorMsg) Then
+            Call MsgBox(sErrorMsg, vbInformation, "Error, contraseña inválida.")
+            Exit Sub
+        End If
+        
+        frmAbmPersons.Show
+    End If
+
+End Sub
+
 Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then
-        Unload Me
+        End
     End If
+End Sub
+
+Private Sub txtUserName_KeyPress(KeyAscii As Integer)
+
+    If (KeyAscii <> 8) Then
+        ' Verificar si el carácter no es una letra (minúscula o mayúscula)
+        If (KeyAscii < 65 Or KeyAscii > 90) And (KeyAscii < 97 Or KeyAscii > 122) Then
+            KeyAscii = 0
+        End If
+    End If
+
 End Sub
 
 Private Sub txtUserName_LostFocus()

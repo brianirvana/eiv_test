@@ -2,11 +2,11 @@ VERSION 5.00
 Object = "{5E9E78A0-531B-11CF-91F6-C2863C385E30}#1.0#0"; "MSFLXGRD.OCX"
 Begin VB.Form frmAbmPersons 
    BackColor       =   &H00404040&
-   BorderStyle     =   4  'Fixed ToolWindow
+   BorderStyle     =   0  'None
    Caption         =   "Alta Baja Modificación Personas"
    ClientHeight    =   6900
-   ClientLeft      =   45
-   ClientTop       =   390
+   ClientLeft      =   0
+   ClientTop       =   0
    ClientWidth     =   11055
    KeyPreview      =   -1  'True
    LinkTopic       =   "Form1"
@@ -68,9 +68,57 @@ Attribute VB_Exposed = False
 
 Option Explicit
 
+'---------------------------------------------------------------------------------------
+' Procedure : FormatGrid
+' Author    : [/About] Brian Sabatier https://github.com/brianirvana
+' Date      : 28/12/2024
+' Purpose   :
+'---------------------------------------------------------------------------------------
+'
+Public Sub FormatGrid()
+
+' Configura las columnas de la grilla con 7 campos
+    On Error GoTo FormatGrid_Error
+
+10  With frmAbmPersons.MSFlexGrid_Persons
+20      .Cols = 7  ' Establecer el número de columnas en la grilla (debe ser 7 en este caso)
+
+        ' Configurar encabezados de columna
+30      .TextMatrix(0, 0) = "Tipo de Documento"
+40      .TextMatrix(0, 1) = "Número de Documento"
+50      .TextMatrix(0, 2) = "Nombre y Apellido"
+60      .TextMatrix(0, 3) = "Fecha de Nacimiento"
+70      .TextMatrix(0, 4) = "Género"
+80      .TextMatrix(0, 5) = "Localidad"
+90      .TextMatrix(0, 6) = "Código Postal"
+
+        ' Opcional: Ajustar el ancho de las columnas
+100     .ColWidth(0) = 2000   ' Ajustar ancho de la columna de tipo de documento
+110     .ColWidth(1) = 2000   ' Ajustar ancho de la columna de número de documento
+120     .ColWidth(2) = 3000   ' Ajustar ancho de la columna de nombre y apellido
+130     .ColWidth(3) = 2000   ' Ajustar ancho de la columna de fecha de nacimiento
+140     .ColWidth(4) = 1000   ' Ajustar ancho de la columna de género
+150     .ColWidth(5) = 2000   ' Ajustar ancho de la columna de localidad
+160     .ColWidth(6) = 1500   ' Ajustar ancho de la columna de código postal
+170 End With
+
+    On Error GoTo 0
+    Exit Sub
+
+FormatGrid_Error:
+
+    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento FormatGrid de Módulo modDBPersons línea: " & Erl())
+
+End Sub
+
 Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
     If KeyCode = 27 Then
         Unload Me
     End If
+End Sub
+
+Private Sub Form_Load()
+    Call FormatGrid
+    Call modDBPersons.LoadPersonas
 End Sub
 

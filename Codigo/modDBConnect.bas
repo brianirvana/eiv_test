@@ -8,12 +8,93 @@ Attribute VB_Name = "modDBConnect"
 
 Option Explicit
 
-Public CN                       As ADODB.Connection
-Public rs                       As New ADODB.Recordset
+Public cn                       As ADODB.Connection
+Public RS                       As New ADODB.Recordset
 
 ' Requiere una referencia a Microsoft ActiveX Data Objects 2.x Library
-Private Const CONNECTION_STRING As String = "DRIVER={MySQL ODBC 8.0 Unicode Driver};SERVER=localhost;UID=root;PWD=;PORT=3306;OPTION=3;ConnectionLifetime=0;ConnectionTimeout=0"
-Private Const CONNECTION_STRING_DB As String = "DRIVER={MySQL ODBC 8.0 Unicode Driver};SERVER=localhost;DATABASE=eiv;UID=root;PWD=;PORT=3306"
+Public CONNECTION_STRING As String  '= "DRIVER={MySQL ODBC 8.0 Unicode Driver};SERVER=localhost;UID=root;PWD=;PORT=3306;OPTION=3;ConnectionLifetime=0;ConnectionTimeout=0"
+Public CONNECTION_STRING_DB As String  '= "DRIVER={MySQL ODBC 8.0 Unicode Driver};SERVER=localhost;DATABASE=eiv;UID=root;PWD=;PORT=3306"
+
+' Declaración de la variable global para almacenar los datos de configuración
+Public Type Param
+    dbCustomCs                  As String
+    dbDriverVer                 As String
+    dbServer                    As String
+    dbName                      As String
+    dbUser                      As String
+    dbPasswd                    As String
+    dbDesc                      As String
+    dbPort                      As Long
+End Type
+
+Public cDB                      As Param
+
+' Función para cargar la configuración de la base de datos desde el archivo db.ini
+'---------------------------------------------------------------------------------------
+' Procedure : LoadDBConfig
+' Author    : [/About] Brian Sabatier https://github.com/brianirvana
+' Date      : 28/12/2024
+' Purpose   :
+'---------------------------------------------------------------------------------------
+'
+Public Sub LoadDBConfig()
+
+    On Error GoTo LoadDBConfig_Error
+
+10  cDB.dbDesc = GetVar(App.Path & "\DB.ini", "DATABASE", "DESC")
+20  cDB.dbCustomCs = GetVar(App.Path & "\DB.ini", "DATABASE", "CUSTOMCS")
+30  cDB.dbName = GetVar(App.Path & "\DB.ini", "DATABASE", "DBNAME")
+40  cDB.dbPasswd = GetVar(App.Path & "\DB.ini", "DATABASE", "DBPASSWD")
+50  cDB.dbUser = GetVar(App.Path & "\DB.ini", "DATABASE", "DBUSER")
+60  cDB.dbDriverVer = GetVar(App.Path & "\DB.ini", "DATABASE", "DriverVer")
+70  cDB.dbServer = GetVar(App.Path & "\DB.ini", "DATABASE", "DBSERVER")
+80  cDB.dbPort = Val(GetVar(App.Path & "\DB.ini", "DATABASE", "DBPORT"))
+
+    ' Validar el puerto como número
+90  If IsNumeric(cDB.dbPort) Then
+100     cDB.dbPort = CLng(cDB.dbPort)
+110 Else
+120     cDB.dbPort = 3306    ' Valor por defecto si no se encuentra o no es válido
+130 End If
+
+    ' Crear las cadenas de conexión
+140 CONNECTION_STRING = "DRIVER={" & cDB.dbDriverVer & "};SERVER=" & cDB.dbServer & ";" & _
+                        "UID=" & cDB.dbUser & ";PWD=" & cDB.dbPasswd & ";" & _
+                        "PORT=" & cDB.dbPort & ";OPTION=3;ConnectionLifetime=0;ConnectionTimeout=0"
+
+150 CONNECTION_STRING_DB = "DRIVER={" & cDB.dbDriverVer & "};SERVER=" & cDB.dbServer & ";" & _
+                           "DATABASE=" & cDB.dbName & ";UID=" & cDB.dbUser & ";" & _
+                           "PWD=" & cDB.dbPasswd & ";PORT=" & cDB.dbPort
+
+    On Error GoTo 0
+    Exit Sub
+
+LoadDBConfig_Error:
+
+    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento LoadDBConfig de Módulo modDBConnect línea: " & Erl())
+
+End Sub
+
+' Función para leer el contenido de un archivo
+Private Function ReadFile(filePath As String) As String
+    Dim fileNumber As Integer
+    Dim fileContents As String
+    
+    On Error GoTo ErrorHandler
+    
+    fileNumber = FreeFile
+    Open filePath For Input As #fileNumber
+    fileContents = Input(LOF(fileNumber), fileNumber)
+    Close #fileNumber
+    ReadFile = fileContents
+    Exit Function
+
+ErrorHandler:
+    MsgBox "Error al leer el archivo: " & Err.Description, vbCritical, "Error"
+    Close #fileNumber
+    ReadFile = ""
+End Function
+
 
 '---------------------------------------------------------------------------------------
 ' Procedure : DBExists
@@ -24,27 +105,27 @@ Private Const CONNECTION_STRING_DB As String = "DRIVER={MySQL ODBC 8.0 Unicode D
 '
 Public Function DBExists(ByVal dbName As String) As Boolean
 
-Dim CN                          As ADODB.Connection
-Dim rs                          As ADODB.Recordset
+Dim cn                          As ADODB.Connection
+Dim RS                          As ADODB.Recordset
 Dim query                       As String
 
     On Error GoTo DBExists_Error
 
-    Set CN = New ADODB.Connection
-    CN.ConnectionString = CONNECTION_STRING
-    CN.Open
+    Set cn = New ADODB.Connection
+    cn.ConnectionString = CONNECTION_STRING
+    cn.Open
 
     query = "SHOW DATABASES LIKE '" & dbName & "';"
-    Set rs = CN.Execute(query)
+    Set RS = cn.Execute(query)
 
-    DBExists = Not rs.EOF
+    DBExists = Not RS.EOF
 
     Call SaveSetting(App.Path, "EIV_SOFTWARE", "IsDBAlreadyExists", IIf(DBExists, "1", "0"))
 
-    rs.Close
-    CN.Close
-    Set rs = Nothing
-    Set CN = Nothing
+    RS.Close
+    cn.Close
+    Set RS = Nothing
+    Set cn = Nothing
 
     On Error GoTo 0
     Exit Function
@@ -64,35 +145,38 @@ End Function
 '
 Public Function DBCreate(ByVal dbName As String) As Boolean
 
-Dim CN                          As ADODB.Connection
+Dim cn                          As ADODB.Connection
 Dim query                       As String
 
-    On Error GoTo DBCreate_Error
+10  On Error GoTo DBCreate_Error
 
-    Set CN = New ADODB.Connection
-    CN.ConnectionString = CONNECTION_STRING
-    CN.Open
+20  Set cn = New ADODB.Connection
+30  cn.ConnectionString = CONNECTION_STRING
+40  cn.Open
 
-    query = "CREATE DATABASE " & dbName & ";"
-    CN.Execute query
+80  cn.CursorLocation = adUseClient
 
-    MsgBox "Base de datos '" & dbName & "' creada exitosamente.", vbInformation
-    CN.Close
-    Set CN = Nothing
-    DBCreate = True
+90  query = "CREATE DATABASE " & dbName & ";"
+100 cn.Execute query
+'50  cn.ConnectionTimeout = 0
+'60  cn.CommandTimeout = 0
+110 MsgBox "Base de datos '" & dbName & "' creada exitosamente.", vbInformation
+120 cn.Close
+130 Set cn = Nothing
+140 DBCreate = True
 
-    Exit Function
+150 Exit Function
 
 ErrorHandler:
-    DBCreate = False
-    MsgBox "Error creando la base de datos: " & Err.Description, vbCritical
+160 DBCreate = False
+170 MsgBox "Error creando la base de datos: " & Err.Description, vbCritical
 
-    On Error GoTo 0
-    Exit Function
+180 On Error GoTo 0
+190 Exit Function
 
 DBCreate_Error:
 
-    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento DBCreate de Módulo modDBConnect línea: " & Erl())
+200 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento DBCreate de Módulo modDBConnect línea: " & Erl())
 
 End Function
 
@@ -105,18 +189,23 @@ End Function
 '
 Public Sub DbConnect()
 
-   On Error GoTo DbConnect_Error
+10  On Error GoTo DbConnect_Error
 
-10        Set CN = New ADODB.Connection
-20        CN.ConnectionString = CONNECTION_STRING
-30        CN.Open
+20  Set cn = New ADODB.Connection
+30  cn.ConnectionTimeout = 0
+40  cn.CommandTimeout = 0
+50  cn.ConnectionString = CONNECTION_STRING
+60  cn.Open
+70  cn.CursorLocation = adUseClient
 
-   On Error GoTo 0
-   Exit Sub
+80  cn.Execute ("USE eiv"), , adOpenForwardOnly
+
+90  On Error GoTo 0
+100 Exit Sub
 
 DbConnect_Error:
 
-    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento DbConnect de Módulo modDBConnect línea: " & Erl())
+110 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento DbConnect de Módulo modDBConnect línea: " & Erl())
 
 End Sub
 
@@ -125,10 +214,10 @@ Public Sub CreateTables()
     On Error GoTo ErrorHandler
     
     Dim query As String
-    Dim CN As ADODB.Connection
-    Set CN = New ADODB.Connection
+    Dim cn As ADODB.Connection
+    Set cn = New ADODB.Connection
     query = CONNECTION_STRING_DB
-    CN.Open query
+    cn.Open query
     
     ' Crear tabla tipos_documentos
     query = "CREATE TABLE IF NOT EXISTS tipos_documentos (" & _
@@ -140,7 +229,7 @@ Public Sub CreateTables()
             "UNIQUE KEY uk_abreviatura (abreviatura), " & _
             "UNIQUE KEY uk_nombre (nombre)" & _
             ");"
-    CN.Execute query
+    cn.Execute query
 
     ' Crear tabla provincias
     query = "CREATE TABLE IF NOT EXISTS provincias (" & _
@@ -150,7 +239,7 @@ Public Sub CreateTables()
             "PRIMARY KEY (id_provincia), " & _
             "UNIQUE KEY uk_nombre (nombre)" & _
             ");"
-    CN.Execute query
+    cn.Execute query
 
     ' Crear tabla localidades
     query = "CREATE TABLE IF NOT EXISTS localidades (" & _
@@ -163,7 +252,7 @@ Public Sub CreateTables()
             "INDEX fk_provincias_localidades_idx (id_provincia), " & _
             "FOREIGN KEY (id_provincia) REFERENCES provincias (id_provincia)" & _
             ");"
-    CN.Execute query
+    cn.Execute query
 
     ' Crear tabla personas
     query = "CREATE TABLE IF NOT EXISTS personas (" & _
@@ -183,7 +272,7 @@ Public Sub CreateTables()
             "FOREIGN KEY (id_tipodocumento) REFERENCES tipos_documentos (id_tipodocumento), " & _
             "FOREIGN KEY (id_localidad) REFERENCES localidades (id_localidad)" & _
             ");"
-    CN.Execute query
+    cn.Execute query
 
     ' Crear tabla usuarios
     query = "CREATE TABLE IF NOT EXISTS usuarios (" & _
@@ -195,7 +284,7 @@ Public Sub CreateTables()
             "UNIQUE KEY uk_nombre_usuario (nombre_usuario), " & _
             "FOREIGN KEY (id_tipodocumento, num_documento) REFERENCES personas (id_tipodocumento, num_documento)" & _
             ");"
-    CN.Execute query
+    cn.Execute query
 
     MsgBox "Todas las tablas fueron creadas exitosamente.", vbInformation
 
@@ -205,7 +294,6 @@ ErrorHandler:
     Call Logs.LogError("Error al crear las tablas: " & Err.Number & " " & Err.Description & " línea: " & Erl())
 
 End Sub
-
 
 Public Sub SeedDatabase()
     On Error GoTo ErrorHandler
@@ -275,58 +363,40 @@ ErrorHandler:
     Set conn = Nothing
 End Sub
 
+'---------------------------------------------------------------------------------------
+' Procedure : DropDatabase
+' Author    : [/About] Brian Sabatier https://github.com/brianirvana
+' Date      : 28/12/2024
+' Purpose   : Función para borrar la base de datos
+'---------------------------------------------------------------------------------------
+'
+Public Function DropDatabase(dbName As String) As Boolean
 
-Private Sub LoadPersonas()
+Dim sql                         As String
 
-Dim conn                        As ADODB.Connection
-Dim rs                          As ADODB.Recordset
-Dim query                       As String
+    ' Validar el nombre de la base de datos
+    On Error GoTo DropDatabase_Error
 
-    On Error GoTo ErrorHandler
+10  If Trim(dbName) = "" Then
+20      MsgBox "El nombre de la base de datos no puede estar vacío.", vbExclamation, "Error"
+30      Exit Function
+40  End If
 
-    ' Conexión a la base de datos
-    Set conn = New ADODB.Connection
-    conn.ConnectionString = CONNECTION_STRING_DB
-    conn.Open
+    ' Crear la cadena SQL para eliminar la base de datos
+50  sql = "DROP DATABASE IF EXISTS " & dbName
 
-    ' Query para listar personas
-    query = "SELECT p.id_tipodocumento, t.nombre AS tipo_documento, " & _
-            "p.num_documento, p.nombre_apellido, p.fecha_nacimiento, " & _
-            "p.genero, l.nombre AS localidad, p.codigo_postal " & _
-            "FROM personas p " & _
-            "INNER JOIN tipos_documentos t ON p.id_tipodocumento = t.id_tipodocumento " & _
-            "INNER JOIN localidades l ON p.id_localidad = l.id_localidad"
+    ' Ejecutar la instrucción SQL para borrar la base de datos
+90  cn.Execute sql
 
-    Set rs = conn.Execute(query)
+    ' Confirmar la eliminación
+100 MsgBox "La base de datos '" & cDB.dbName & "' ha sido eliminada con éxito.", vbInformation, "Éxito"
+110 DropDatabase = True
 
-    ' Llenar la grilla con los datos
-    Dim row                     As Integer
-    row = 1
-    While Not rs.EOF
-        frmAbmPersons.MSFlexGrid_Persons.AddItem ""
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 0) = rs("tipo_documento")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 1) = rs("num_documento")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 2) = rs("nombre_apellido")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 3) = rs("fecha_nacimiento")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 4) = rs("genero")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 5) = rs("localidad")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 6) = rs("codigo_postal")
-        rs.MoveNext
-        row = row + 1
-    Wend
+    On Error GoTo 0
+    Exit Function
 
-    rs.Close
-    conn.Close
-    Set rs = Nothing
-    Set conn = Nothing
-    Exit Sub
+DropDatabase_Error:
 
-ErrorHandler:
-    MsgBox "Error al cargar personas: " & Err.Description, vbCritical
-    If Not rs Is Nothing Then rs.Close
-    If Not conn Is Nothing Then conn.Close
-    Set rs = Nothing
-    Set conn = Nothing
-End Sub
+    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento DropDatabase de Módulo modDBConnect línea: " & Erl())
 
-
+End Function
