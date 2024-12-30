@@ -1,6 +1,8 @@
 Attribute VB_Name = "modPerson"
 Option Explicit
 
+Public tmpUserEdit              As tUser
+
 Function ValidatePersonCreate(ByRef tmpUser As tUser, ByRef sErrorMsg As String) As Boolean
 
 Dim tmpFields()                 As String
@@ -18,18 +20,12 @@ Dim tmpValues()                 As String
 80  tmpValues(1) = tmpUser.Person.id_dni
 90  tmpValues(2) = tmpUser.Person.dni
 
-100 If tmpUser.Person.FirstName = "Nombre" Then
-110     sErrorMsg = "Ingrese un nombre personal válido por favor."
+100 If tmpUser.Person.Name = "Nombre" Then
+110     sErrorMsg = "Ingrese un nombre y apellido válidos por favor."
 120     Exit Function
-130 ElseIf Not Len(tmpUser.Person.FirstName) > 3 Then
-140     sErrorMsg = "El nombre personal debe contener al menos 3 letras."
+130 ElseIf Not Len(tmpUser.Person.Name) > 3 Then
+140     sErrorMsg = "El nombre y apellido deben contener al menos 3 letras."
 150     Exit Function
-160 ElseIf tmpUser.Person.LastName = "Apellido" Then
-170     sErrorMsg = "Ingrese un apellido válido por favor."
-180     Exit Function
-190 ElseIf Not Len(tmpUser.Person.LastName) > 2 Then
-200     sErrorMsg = "El apellido debe contener al menos 2 letras."
-210     Exit Function
 220 ElseIf CStr(tmpUser.Person.id_dni) = 0 Then
 230     sErrorMsg = "Ingrese un tipo de documento por favor."
 240 ElseIf CStr(tmpUser.Person.dni) = "DNI" Then
@@ -42,7 +38,7 @@ Dim tmpValues()                 As String
 310     sErrorMsg = "El número y tipo de documentos seleccionados, ya están registrados. La persona ya existe en la base de datos."
 320     Exit Function
 330 ElseIf Not ValidateDateBirth(tmpUser) Then
-340     sErrorMsg = "La fecha de nacimiento parece ser inválida. Utilice el formato DD/MM/YYYY (Ej: 01/05/2001"
+340     sErrorMsg = "La fecha de nacimiento parece ser inválida. Utilice el formato DD/MM/YYYY (Ej: 01/05/2001)"
 350     Exit Function
 360 End If
 
@@ -57,13 +53,50 @@ ValidatePersonCreate_Error:
 
 End Function
 
+Function ValidatePersonEdit(ByRef tmpUser As tUser, ByRef sErrorMsg As String) As Boolean
+
+Dim tmpFields()                 As String
+Dim tmpValues()                 As String
+
+10  On Error GoTo ValidatePersonEdit_Error
+
+20  If tmpUser.Person.Name = "Nombre" Then
+30      sErrorMsg = "Ingrese un nombre y apellido válidos por favor."
+40      Exit Function
+50  ElseIf Not Len(tmpUser.Person.Name) > 3 Then
+60      sErrorMsg = "El nombre y apellido deben contener al menos 3 letras."
+70      Exit Function
+80  ElseIf CStr(tmpUser.Person.id_dni) = 0 Then
+90      sErrorMsg = "Ingrese un tipo de documento por favor."
+100 ElseIf CStr(tmpUser.Person.dni) = "DNI" Then
+110     sErrorMsg = "Ingrese un DNI válido por favor."
+120     Exit Function
+130 ElseIf Not ValidateDNI(tmpUser.Person.dni) Then
+140     sErrorMsg = "Ingrese un DNI válido por favor (que tenga entre 7 u 8 caracteres y sean sólo números)."
+150     Exit Function
+160 ElseIf Not ValidateDateBirth(tmpUser) Then
+170     sErrorMsg = "La fecha de nacimiento parece ser inválida. Utilice el formato DD/MM/YYYY (Ej: 01/05/2001)"
+180     Exit Function
+190 End If
+
+200 ValidatePersonEdit = True
+
+210 On Error GoTo 0
+220 Exit Function
+
+ValidatePersonEdit_Error:
+
+230 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidatePersonEdit de Módulo modPerson línea: " & Erl())
+
+End Function
+
 Public Function ValidateDateBirth(ByRef tmpUser As tUser) As Boolean
 
 Dim inputDate                   As String
 Dim day As Integer, month As Integer, year As Integer
 Dim dateValue                   As Date
 
-    ' Obtener el texto del TextBox
+    ' Obtener el Texto del TextBox
     On Error GoTo ValidateDateBirth_Error
 
 10  inputDate = tmpUser.Person.DateBirth
@@ -86,7 +119,7 @@ Dim dateValue                   As Date
 120     Exit Function
 130 End If
 
-    ' Extraer el día, mes y año del texto
+    ' Extraer el día, mes y año del Texto
 140 day = Val(Mid(inputDate, 1, 2))
 150 month = Val(Mid(inputDate, 4, 2))
 160 year = Val(Mid(inputDate, 7, 4))    ' El año debe ser de 4 dígitos

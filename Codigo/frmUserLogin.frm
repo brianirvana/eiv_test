@@ -57,7 +57,7 @@ Begin VB.Form frmUserLogin
       Left            =   1440
       PasswordChar    =   "#"
       TabIndex        =   1
-      Text            =   "3421321.Staff"
+      Text            =   "3421321a"
       Top             =   960
       Width           =   2895
    End
@@ -130,9 +130,11 @@ Dim tmpUser                     As tUser
 
     If Not ValidateUserLogin(tmpUser, sErrorMsg) Then
         Call MsgBox(sErrorMsg, vbInformation, "Error, por favor revise la información ingresada.")
+        lblInfo.Caption = "Error, por favor revise la información ingresada."
     Else
         If Not ValidateDBPassword(tmpUser, sErrorMsg) Then
             Call MsgBox(sErrorMsg, vbInformation, "Error, contraseña inválida.")
+            lblInfo.Caption = "Error, contraseña inválida."
             Exit Sub
         End If
         
@@ -160,6 +162,8 @@ Private Sub txtUserName_KeyPress(KeyAscii As Integer)
             KeyAscii = 0
         End If
     End If
+
+   lblInfo.Caption = vbNullString
 
 End Sub
 
@@ -194,9 +198,13 @@ txtUserName_MouseUp_Error:
 End Sub
 
 Private Sub txtUserPassword_KeyPress(KeyAscii As Integer)
+
+    lblInfo.Caption = vbNullString
+
     If KeyAscii = 13 Then
         Call cmdLogin_Click
     End If
+    
 End Sub
 
 Private Sub txtUserPassword_LostFocus()

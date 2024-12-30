@@ -37,11 +37,13 @@ Begin VB.Form frmAbmPersons
       Cols            =   7
       FixedCols       =   0
       BackColor       =   12632256
-      BackColorFixed  =   12640511
+      BackColorFixed  =   16777215
+      GridColor       =   14737632
       AllowBigSelection=   -1  'True
+      FocusRect       =   2
       FillStyle       =   1
       SelectionMode   =   1
-      AllowUserResizing=   1
+      AllowUserResizing=   3
       Appearance      =   0
    End
    Begin VB.CommandButton cmdDeletePerson 
@@ -92,53 +94,108 @@ Option Explicit
 '
 Public Sub FormatGrid()
 
-' Configura las columnas de la grilla con 7 campos
+' Configura las columnas de la grilla con 9 campos (incluyendo el ID oculto)
 10  On Error GoTo FormatGrid_Error
 
 20  With frmAbmPersons.MSFlexGrid_Persons
-30      .Cols = 9  ' Establecer el número de columnas en la grilla (debe ser 7 en este caso)
+30      .Cols = 10  ' Establecer el número de columnas en la grilla (incluye la columna oculta para el ID)
 
         ' Configurar encabezados de columna
-40      .TextMatrix(0, 0) = "Tipo de Documento"
-50      .TextMatrix(0, 1) = "Número de Documento"
-60      .TextMatrix(0, 2) = "Nombre y Apellido"
-70      .TextMatrix(0, 3) = "Fecha de Nacimiento"
-80      .TextMatrix(0, 4) = "Género"
-90      .TextMatrix(0, 5) = "Localidad"
-100     .TextMatrix(0, 6) = "Código Postal"
-110     .TextMatrix(0, 7) = "Correo electrónico"
-120     .TextMatrix(0, 8) = "Argentino"
+40      .TextMatrix(0, 0) = "ID"  ' Encabezado de la columna oculta
+50      .TextMatrix(0, 1) = "Tipo de Documento"
+60      .TextMatrix(0, 2) = "Número de Documento"
+70      .TextMatrix(0, 3) = "Nombre y Apellido"
+80      .TextMatrix(0, 4) = "Fecha de Nacimiento"
+90      .TextMatrix(0, 5) = "Género"
+100     .TextMatrix(0, 6) = "Localidad"
+110     .TextMatrix(0, 7) = "Código Postal"
+120     .TextMatrix(0, 8) = "Correo electrónico"
+130     .TextMatrix(0, 9) = "Argentino"
 
-        ' Opcional: Ajustar el ancho de las columnas
-130     .ColWidth(0) = 900   ' Ajustar ancho de la columna de tipo de documento
-140     .ColWidth(1) = 900   ' Ajustar ancho de la columna de número de documento
-150     .ColWidth(2) = 1500   ' Ajustar ancho de la columna de nombre y apellido
-160     .ColWidth(3) = 900   ' Ajustar ancho de la columna de fecha de nacimiento
-170     .ColWidth(4) = 650   ' Ajustar ancho de la columna de género
-180     .ColWidth(5) = 1500  ' Ajustar ancho de la columna de localidad
-190     .ColWidth(6) = 900   ' Ajustar ancho de la columna de código postal
-200     .ColWidth(7) = 1900
-210     .ColWidth(8) = 800
+        ' Ajustar el ancho de las columnas
+140     .ColWidth(0) = 0      ' Ocultar la columna del ID
+150     .ColWidth(1) = 900    ' Ancho de la columna de tipo de documento
+160     .ColWidth(2) = 900    ' Ancho de la columna de número de documento
+170     .ColWidth(3) = 1500   ' Ancho de la columna de nombre y apellido
+180     .ColWidth(4) = 1200    ' Ancho de la columna de fecha de nacimiento
+190     .ColWidth(5) = 650    ' Ancho de la columna de género
+200     .ColWidth(6) = 1500   ' Ancho de la columna de localidad
+210     .ColWidth(7) = 900    ' Ancho de la columna de código postal
+220     .ColWidth(8) = 1900   ' Ancho de la columna de correo electrónico
+230     .ColWidth(9) = 800    ' Ancho de la columna de argentino
 
-220 End With
+240 End With
 
-230 On Error GoTo 0
-240 Exit Sub
+250 On Error GoTo 0
+260 Exit Sub
 
 FormatGrid_Error:
 
-250 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento FormatGrid de Módulo modDBPersons línea: " & Erl())
+270 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento FormatGrid de Módulo modDBPersons línea: " & Erl())
 
 End Sub
 
 Private Sub cmdAddPerson_Click()
-    frmPersonAdd.Show
-    Me.Hide
+
+   On Error GoTo cmdAddPerson_Click_Error
+
+10        If Not frmPerson Is Nothing Then
+20            Call Unload(frmPerson)
+30        End If
+          
+40        Call Load(frmPerson)
+50        frmPerson.TypeMode = eTypeMode.PersonCreate
+60        frmPerson.Show
+70        Me.Hide
+
+   On Error GoTo 0
+   Exit Sub
+
+cmdAddPerson_Click_Error:
+
+    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento cmdAddPerson_Click de Formulario frmAbmPersons línea: " & Erl())
+          
 End Sub
 
 Private Sub cmdClose_Click()
     frmUserLogin.Show
     Unload Me
+End Sub
+
+Private Sub cmdEditPerson_Click()
+
+Dim selectedRow                 As Integer
+
+    ' Verificar que hay una fila seleccionada (excepto la fila de encabezado)
+    On Error GoTo cmdEditPerson_Click_Error
+
+10  selectedRow = MSFlexGrid_Persons.row
+
+20  If selectedRow <= 0 Then
+30      MsgBox "Por favor, seleccione un registro válido.", vbExclamation, "Atención"
+40      Exit Sub
+50  End If
+
+60  tmpUserEdit.Person.id = Val(MSFlexGrid_Persons.TextMatrix(selectedRow, 0))
+
+70  If tmpUserEdit.Person.id < 0 Then
+80      MsgBox "Debe seleccionar una persona para continuar."
+90      Exit Sub
+100 End If
+
+110 Call LoadPerson(frmPerson)
+120 frmPerson.TypeMode = eTypeMode.PersonEdit
+130 Call modDBPersons.LoadPerson(frmPerson)
+140 frmPerson.Show
+150 Unload Me
+
+    On Error GoTo 0
+    Exit Sub
+
+cmdEditPerson_Click_Error:
+
+    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento cmdEditPerson_Click de Formulario frmAbmPersons línea: " & Erl())
+
 End Sub
 
 Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
@@ -150,10 +207,59 @@ End Sub
 
 Private Sub Form_Load()
     Call FormatGrid
-    Call modDBPersons.LoadPersonas
+    Call modDBPersons.LoadPersons
+    
 End Sub
 
- 
+'---------------------------------------------------------------------------------------
+' Procedure : MSFlexGrid_Persons_DblClick
+' Author    : [/About] Brian Sabatier https://github.com/brianirvana
+' Date      : 29/12/2024
+' Purpose   :
+'---------------------------------------------------------------------------------------
+'
+Private Sub MSFlexGrid_Persons_DblClick()
+
+Dim selectedRow                 As Integer
+'Dim tmpUser                     As tUser
+
+    ' Obtener la fila seleccionada
+    On Error GoTo MSFlexGrid_Persons_DblClick_Error
+
+10  selectedRow = MSFlexGrid_Persons.row
+
+    ' Asegurarse de que la fila seleccionada no sea la cabecera (fila 0)
+20  If selectedRow <= 0 Then
+30      MsgBox "Seleccione una persona válida de la lista.", vbExclamation, "Advertencia"
+40      Exit Sub
+50  End If
+
+    ' Obtener el ID de la persona (asumimos que está en la primera columna)
+60  tmpUserEdit.Person.id = Val(MSFlexGrid_Persons.TextMatrix(selectedRow, 0))
+
+    ' Verificar que se obtuvo un ID válido
+70  If Trim(tmpUserEdit.Person.id) = "" Or tmpUserEdit.Person.id <= 0 Then
+80      MsgBox "No se pudo obtener el ID de la persona seleccionada.", vbCritical, "Error"
+90      Exit Sub
+100 End If
+
+    ' Abrir el formulario de edición de personas
+110 Call Load(frmPerson)
+120 frmPerson.TypeMode = eTypeMode.PersonEdit
+    Call modDBPersons.LoadPerson(frmPerson)
+    
+130 frmPerson.Show
+140 Unload Me
+
+    On Error GoTo 0
+    Exit Sub
+
+MSFlexGrid_Persons_DblClick_Error:
+
+    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento MSFlexGrid_Persons_DblClick de Formulario frmAbmPersons línea: " & Erl())
+
+End Sub
+
 Private Sub MSFlexGrid_Persons_Scroll()
     Debug.Print "ASD"
 End Sub

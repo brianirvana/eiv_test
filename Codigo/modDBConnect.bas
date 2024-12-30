@@ -256,6 +256,7 @@ Public Sub CreateTables()
 
     ' Crear tabla personas
     query = "CREATE TABLE IF NOT EXISTS personas (" & _
+            "id INT NOT NULL AUTO_INCREMENT, " & _
             "id_tipodocumento INT NOT NULL, " & _
             "num_documento BIGINT NOT NULL, " & _
             "nombre_apellido VARCHAR(400) NOT NULL, " & _
@@ -267,11 +268,13 @@ Public Sub CreateTables()
             "id_localidad INT, " & _
             "codigo_postal VARCHAR(10), " & _
             "PRIMARY KEY (id_tipodocumento, num_documento), " & _
+            "UNIQUE KEY uk_id (id), " & _
             "UNIQUE KEY uk_nombre_apellido (nombre_apellido), " & _
             "INDEX fk_localidades_id_localidad_idx (id_localidad), " & _
             "FOREIGN KEY (id_tipodocumento) REFERENCES tipos_documentos (id_tipodocumento), " & _
             "FOREIGN KEY (id_localidad) REFERENCES localidades (id_localidad)" & _
             ");"
+
     cn.Execute query
 
     ' Crear tabla usuarios

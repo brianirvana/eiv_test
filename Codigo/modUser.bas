@@ -5,10 +5,10 @@ Option Explicit
 
 'Esto debería ir en modPerson, pero debido a las dependencias circulares de vb6 no fue posible.
 Public Type tPerson
+    id                          As Long         'id auto incremental
     id_dni                      As Long         'Tipo documento
     dni                         As Long         'DNI Número
-    FirstName                   As String       'Nombre
-    LastName                    As String       'Apellido
+    Name                        As String       'Nombre
     DateBirth                   As String       'Fecha nacimiento
     Genre                       As String * 1   'Género
     is_argentine                As Boolean      'Es argentino?
@@ -229,43 +229,40 @@ Dim tmpValues()                 As String
 130 ElseIf Not Len(tmpUser.UserName) > 3 Then
 140     sErrorMsg = "El nombre de usuario debe contener al menos 3 letras."
 150     Exit Function
-160 ElseIf tmpUser.Person.FirstName = "Nombre" Then
-170     sErrorMsg = "Ingrese un nombre personal válido por favor."
+160 ElseIf tmpUser.Person.Name = "Nombre" Then
+170     sErrorMsg = "Ingrese un nombre y apellido válido por favor."
 180     Exit Function
-190 ElseIf Not Len(tmpUser.Person.FirstName) > 3 Then
-200     sErrorMsg = "El nombre personal debe contener al menos 3 letras."
+190 ElseIf Not Len(tmpUser.Person.Name) > 3 Then
+200     sErrorMsg = "El nombre y apellido deben contener al menos 3 letras."
 210     Exit Function
-220 ElseIf tmpUser.Person.LastName = "Apellido" Then
-230     sErrorMsg = "Ingrese un apellido válido por favor."
-240     Exit Function
-250 ElseIf CStr(tmpUser.Person.id_dni) = 0 Then
-260     sErrorMsg = "Ingrese un tipo de documento por favor."
-270 ElseIf CStr(tmpUser.Person.dni) = "DNI" Then
-280     sErrorMsg = "Ingrese un DNI válido por favor."
+220 ElseIf CStr(tmpUser.Person.id_dni) = 0 Then
+230     sErrorMsg = "Ingrese un tipo de documento por favor."
+240 ElseIf CStr(tmpUser.Person.dni) = "DNI" Then
+250     sErrorMsg = "Ingrese un DNI válido por favor."
+260     Exit Function
+270 ElseIf Not ValidateDNI(tmpUser.Person.dni) Then
+280     sErrorMsg = "Ingrese un DNI válido por favor (que tenga entre 7 u 8 caracteres y sean sólo números)."
 290     Exit Function
-300 ElseIf Not ValidateDNI(tmpUser.Person.dni) Then
-310     sErrorMsg = "Ingrese un DNI válido por favor (que tenga entre 7 u 8 caracteres y sean sólo números)."
+300 ElseIf ExistsArr("personas", tmpFields, tmpValues) Then
+310     sErrorMsg = "El número y tipo de documentos seleccionados, ya están registrados. La persona ya existe en la base de datos."
 320     Exit Function
-330 ElseIf ExistsArr("personas", tmpFields, tmpValues) Then
-340     sErrorMsg = "El número y tipo de documentos seleccionados, ya están registrados. La persona ya existe en la base de datos."
+330 ElseIf tmpUser.Password = "Contraseña" Then
+340     sErrorMsg = "Ingrese una contraseña válida por favor."
 350     Exit Function
-360 ElseIf tmpUser.Password = "Contraseña" Then
-370     sErrorMsg = "Ingrese una contraseña válida por favor."
+360 End If
+
+370 If Not ValidatePassword(tmpUser.Password, sErrorMsg) Then
 380     Exit Function
 390 End If
 
-400 If Not ValidatePassword(tmpUser.Password, sErrorMsg) Then
-410     Exit Function
-420 End If
+400 ValidateUserCreate = True
 
-430 ValidateUserCreate = True
-
-440 On Error GoTo 0
-450 Exit Function
+410 On Error GoTo 0
+420 Exit Function
 
 ValidateUserCreate_Error:
 
-460 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidateUserCreate de Módulo modUser línea: " & Erl())
+430 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidateUserCreate de Módulo modUser línea: " & Erl())
 
 End Function
 
@@ -318,16 +315,16 @@ End Function
 ' Procedure : CheckTxtControlMouseDown
 ' Author    : [/About] Brian Sabatier https://github.com/brianirvana
 ' Date      : 27/12/2024
-' Purpose   : Controlamos en los eventos MouseDown (click) el texto que muestra el control para referenciar al usuario.
+' Purpose   : Controlamos en los eventos MouseDown (click) el Texto que muestra el control para referenciar al usuario.
 '---------------------------------------------------------------------------------------
 '
 Public Function CheckTxtControlMouseDown(ByRef txtControl As TextBox)
 
     On Error GoTo CheckTxtControlMouseDown_Error
 
-    If txtControl.text = "Usuario" Or txtControl.text = "Nombre" Or txtControl.text = "Apellido" Or txtControl.text = "DNI" _
-    Or txtControl.text = "Contraseña" Or txtControl.text = "E-mail" Or txtControl.text = "Fecha nacimiento" Then
-        txtControl.text = vbNullString
+    If txtControl.Text = "Usuario" Or txtControl.Text = "Nombre" Or txtControl.Text = "Apellido" Or txtControl.Text = "DNI" _
+    Or txtControl.Text = "Contraseña" Or txtControl.Text = "E-mail" Or txtControl.Text = "Fecha nacimiento" Then
+        txtControl.Text = vbNullString
     End If
 
     On Error GoTo 0
@@ -343,29 +340,29 @@ End Function
 ' Procedure : CheckTxtControlMouseUp
 ' Author    : [/About] Brian Sabatier https://github.com/brianirvana
 ' Date      : 27/12/2024
-' Purpose   : Controlamos en los eventos MouseUp (soltar el click) el texto que muestra el control para referenciar al usuario.
+' Purpose   : Controlamos en los eventos MouseUp (soltar el click) el Texto que muestra el control para referenciar al usuario.
 '---------------------------------------------------------------------------------------
 '
 Public Function CheckTxtControlMouseUp(ByRef txtControl As TextBox)
 
     On Error GoTo CheckTxtControlMouseUp_Error
 
-    If StrComp(UCase$(txtControl.text), vbNullString) = 0 Or StrComp(UCase$(txtControl.text), " ") = 0 Then
+    If StrComp(UCase$(txtControl.Text), vbNullString) = 0 Or StrComp(UCase$(txtControl.Text), " ") = 0 Then
         If txtControl.Name = "txtUserName" Then
-            txtControl.text = "Usuario"
+            txtControl.Text = "Usuario"
         ElseIf txtControl.Name = "txtFirstName" Then
-            txtControl.text = "Nombre"
-        ElseIf txtControl.Name = "txtLastName" Then
-            txtControl.text = "Apellido"
+            txtControl.Text = "Nombre"
+        ElseIf txtControl.Name = "txtName" Then
+            txtControl.Text = "Apellido"
         ElseIf txtControl.Name = "txtDNI" Then
-            txtControl.text = "DNI"
+            txtControl.Text = "DNI"
         ElseIf txtControl.Name = "txtPassword" Then
-            txtControl.text = "Contraseña"
+            txtControl.Text = "Contraseña"
         ElseIf txtControl.Name = "txtEmail" Then
-            txtControl.text = "E-mail"
+            txtControl.Text = "E-mail"
         ElseIf txtControl.Name = "txtDateBirth" Then
             txtControl.MaxLength = 20
-            txtControl.text = "Fecha nacimiento"
+            txtControl.Text = "Fecha nacimiento"
             txtControl.MaxLength = 10
         End If
         Exit Function

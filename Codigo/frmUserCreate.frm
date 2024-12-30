@@ -145,13 +145,13 @@ Attribute VB_Exposed = False
 Option Explicit
 
 Private Sub cmbIdDNIType_GotFocus()
-    If Len(cmbIdDNIType.text) > 0 Then
+    If Len(cmbIdDNIType.Text) > 0 Then
         txtDNI.Enabled = True
     End If
 End Sub
 
 Private Sub cmbIdDNIType_LostFocus()
-    If Len(cmbIdDNIType.text) > 0 Then
+    If Len(cmbIdDNIType.Text) > 0 Then
         txtDNI.Enabled = True
     End If
 End Sub
@@ -175,9 +175,8 @@ Dim tmpUser                     As tUser
 
 10  On Error GoTo cmdCreateUser_Click_Error
 
-20  tmpUser.UserName = txtUserName.text
-30  tmpUser.Person.FirstName = txtFirstName.text
-40  tmpUser.Person.LastName = txtLastName.text
+20  tmpUser.UserName = txtUserName.Text
+30  tmpUser.Person.Name = txtFirstName.Text
 
 50  If cmbIdDNIType.ListIndex = -1 Then
 60      MsgBox "Por favor, debe seleccionar un tipo de documento."
@@ -185,9 +184,9 @@ Dim tmpUser                     As tUser
 80  End If
 
 90  tmpUser.Person.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
-100 tmpUser.Person.dni = txtDNI.text
-110 tmpUser.Person.Email = txtEmail.text
-120 tmpUser.Password = txtPassword.text
+100 tmpUser.Person.dni = txtDNI.Text
+110 tmpUser.Person.Email = txtEmail.Text
+120 tmpUser.Password = txtPassword.Text
 
 130 If Not ValidateUserCreate(tmpUser, sErrorMsg) Then
 140     Call MsgBox(sErrorMsg, vbInformation, "Error, por favor revise la información ingresada.")
@@ -228,14 +227,14 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    If Len(cmbIdDNIType.text) > 0 And Not txtDNI.Enabled Then
+    If Len(cmbIdDNIType.Text) > 0 And Not txtDNI.Enabled Then
         txtDNI.Enabled = True
     End If
 End Sub
 
 Private Sub txtDNI_Change()
-    If Len(txtDNI.text) > 1000 Then
-        txtDNI.text = NumberToPunctuatedString(txtDNI.text)
+    If Len(txtDNI.Text) > 1000 Then
+        txtDNI.Text = NumberToPunctuatedString(txtDNI.Text)
     End If
 End Sub
 
@@ -248,7 +247,7 @@ Private Sub txtDNI_KeyPress(KeyAscii As Integer)
 End Sub
 
 Private Sub txtEmail_Change()
-    If Not CheckMailString(txtEmail.text) Then
+    If Not CheckMailString(txtEmail.Text) Then
         lblInfo.Caption = "El e-mail parece ser inválido."
     Else
         lblInfo.Caption = ""
@@ -256,7 +255,7 @@ Private Sub txtEmail_Change()
 End Sub
 
 Private Sub txtFirstName_Click()
-    Call CheckTxtControlMouseDown(txtUserName)
+    Call CheckTxtControlMouseDown(txtFirstName)
 End Sub
 
 Private Sub txtFirstName_KeyPress(KeyAscii As Integer)
@@ -271,7 +270,7 @@ Private Sub txtFirstName_KeyPress(KeyAscii As Integer)
 End Sub
 
 Private Sub txtPassword_Change()
-    If Len(txtPassword.text) < 6 Then
+    If Len(txtPassword.Text) < 6 Then
         frmUserCreate.lblInfo.Caption = "La contraseña debe tener como mínimo 6 caracteres, máximo 32, debe contener al menos una letra y un número."
     Else
         frmUserCreate.lblInfo.Caption = ""
@@ -307,14 +306,6 @@ End Sub
 
 Private Sub txtPassword_LostFocus()
     Call CheckTxtControlMouseUp(txtPassword)
-End Sub
-
-Private Sub txtLastName_LostFocus()
-    Call CheckTxtControlMouseUp(txtLastName)
-End Sub
-
-Private Sub txtLastName_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Call CheckTxtControlMouseDown(txtLastName)
 End Sub
 
 Private Sub txtFirstName_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)

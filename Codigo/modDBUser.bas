@@ -103,7 +103,7 @@ Dim RS                          As ADODB.Recordset
 
     'Primero insertamos los datos del usuario en la tabla "personas" para garantizar que las claves foráneas requeridas en la tabla "usuarios" (id_tipodocumento, num_documento) existan.
     'Esto evita conflictos de integridad referencial al insertar en la tabla "usuarios".
-230 sQuery = "INSERT INTO personas (id_tipodocumento, num_documento, nombre_apellido, correo_electronico)  VALUES ( " & tmpUser.Person.id_dni & "," & tmpUser.Person.dni & ",'" & tmpUser.Person.FirstName & " " & tmpUser.Person.LastName & "','" & tmpUser.Person.Email & "')"
+230 sQuery = "INSERT INTO personas (id_tipodocumento, num_documento, nombre_apellido, correo_electronico)  VALUES ( " & tmpUser.Person.id_dni & "," & tmpUser.Person.dni & ",'" & tmpUser.Person.Name & "','" & tmpUser.Person.Email & "')"
 240 Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
 
 250 sQuery = "INSERT INTO usuarios (id_tipodocumento, num_documento, nombre_usuario, hashed_pwd)  VALUES ( " & tmpUser.Person.id_dni & "," & tmpUser.Person.dni & ",'" & tmpUser.UserName & "','" & tmpUser.HashedPwd & "')"
