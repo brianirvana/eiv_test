@@ -185,6 +185,10 @@ End Enum
 
 Public TypeMode                 As eTypeMode
 
+Private Sub cmbState_LostFocus()
+    Call modDBPersons.LoadLocality(Me)
+End Sub
+
 Private Sub cmdClose_Click()
     frmUserLogin.Show
     Unload Me
@@ -219,6 +223,7 @@ Dim sErrorMsg                   As String
 140 End If
 
 150 tmpUserEdit.Person.id_locality = cmbState.ItemData(cmbState.ListIndex)
+151 tmpUserEdit.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
 
 160 If cmbGenre.ListIndex = -1 Then
 170     MsgBox "Por favor, debe seleccionar el género de la persona."
@@ -226,7 +231,7 @@ Dim sErrorMsg                   As String
 190 End If
 
 200 If tmpUserEdit.Person.zip_code <= 0 Then
-210     MsgBox sErrorMsg
+210     MsgBox "Por favor, debe ingresar el código postal."
 220     Exit Sub
 230 End If
 
@@ -234,9 +239,9 @@ Dim sErrorMsg                   As String
 
         Case eTypeMode.None
             'Do nothing
+            
 250     Case eTypeMode.PersonCreate
             Dim tmpUser         As tUser
-
 260         tmpUser.Person.Name = txtName.Text
 270         tmpUser.Person.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
 280         tmpUser.Person.dni = txtDNI.Text
@@ -245,13 +250,16 @@ Dim sErrorMsg                   As String
 310         tmpUser.Person.is_argentine = IIf(CBool(chkIsArgentine.Value), True, False)
 320         tmpUser.Person.Genre = cmbGenre.Text
 330         tmpUser.Person.zip_code = GetZipCodeFromLocality(tmpUser, sErrorMsg)
+            tmpUser.Person.id_state = cmbState.ItemData(cmbState.ListIndex)
+            tmpUser.Person.id_locality = cmbLocality.ItemData(cmbLocality.ListIndex)
+531         tmpUser.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
 
 340         If Not ValidatePersonCreate(tmpUser, sErrorMsg) Then
 350             Call MsgBox(sErrorMsg, vbInformation, "Error, por favor revise la información ingresada.")
 360         Else
 370             If modDBPersons.PersonCreate(tmpUser, sErrorMsg) Then
 380                 Call MsgBox("Nueva persona: '" & tmpUser.Person.Name & "' añadida con éxito.", vbInformation, "¡Exito!")
-390                 frmUserLogin.Show
+390                 frmAbmPersons.Show
 400                 Unload Me
 410             Else
 420                 Call MsgBox(sErrorMsg, vbInformation, "Error al añadir la persona.")
@@ -267,8 +275,11 @@ Dim sErrorMsg                   As String
 500         tmpUserEdit.Person.Email = txtEmail.Text
 510         tmpUserEdit.Person.is_argentine = IIf(CBool(chkIsArgentine.Value), True, False)
 520         tmpUserEdit.Person.Genre = cmbGenre.Text
-530         tmpUserEdit.Person.zip_code = GetZipCodeFromLocality(tmpUser, sErrorMsg)
 
+            tmpUserEdit.Person.id_state = cmbState.ItemData(cmbState.ListIndex)
+            tmpUserEdit.Person.id_locality = cmbLocality.ItemData(cmbLocality.ListIndex)
+530         tmpUserEdit.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
+            
 540         If Not ValidatePersonEdit(tmpUserEdit, sErrorMsg) Then
 550             Call MsgBox(sErrorMsg, vbInformation, "Error, revise la información ingresada.")
 560         Else
@@ -281,6 +292,9 @@ Dim sErrorMsg                   As String
 630             End If
 640         End If
 650 End Select
+
+161 Call frmAbmPersons.FormatGrid
+171 Call modDBPersons.LoadPersons
 
 660 On Error GoTo 0
 670 Exit Sub
@@ -306,7 +320,7 @@ Private Sub Form_Load()
 
     Call modDBPersons.LoadDNITypes(Me)
     Call modDBPersons.LoadStates(Me)
-    Call modDBPersons.LoadLocality(Me)
+    'Call modDBPersons.LoadLocality(Me)
     
     Me.cmbGenre.Clear
     Me.cmbGenre.AddItem "M"
@@ -331,9 +345,20 @@ Private Sub LoadTypeModeForm()
 End Sub
 
 Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    
     If Len(cmbIdDNIType.Text) > 0 And Not txtDNI.Enabled Then
         txtDNI.Enabled = True
     End If
+    
+    Static LastLocality As Long
+    
+'    If Len(cmbState.Text) > 0 Or LastLocality <> 0 Then
+'        'Call modDBPersons.LoadLocality(Me)
+'        If frmPerson.cmbLocality.ListIndex >= 0 Then
+'            LastLocality = frmPerson.cmbLocality.ItemData(frmPerson.cmbLocality.ListIndex)
+'        End If
+'    End If
+    
 End Sub
 
 Private Sub txtDateBirth_KeyPress(KeyAscii As Integer)

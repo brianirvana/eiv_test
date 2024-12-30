@@ -162,6 +162,50 @@ Private Sub cmdClose_Click()
     Unload Me
 End Sub
 
+Private Sub cmdDeletePerson_Click()
+
+Dim selectedRow                 As Integer
+
+10  On Error GoTo cmdDeletePerson_Click_Error
+
+20  If Not MsgBox("¿Está seguro que desea borrar la persona seleccionada?", vbOKCancel) = vbOK Then
+30      Exit Sub
+40  End If
+
+50  selectedRow = MSFlexGrid_Persons.row
+
+60  If selectedRow <= 0 Then
+70      MsgBox "Por favor, seleccione un registro válido.", vbExclamation, "Atención"
+80      Exit Sub
+90  End If
+
+100 tmpUserEdit.Person.id = Val(MSFlexGrid_Persons.TextMatrix(selectedRow, 0))
+
+110 If tmpUserEdit.Person.id < 0 Then
+120     MsgBox "Debe seleccionar una persona para continuar."
+130     Exit Sub
+140 End If
+
+150 Call LoadPerson(frmPerson)
+
+160 If PersonDelete(tmpUserEdit) Then
+170     MsgBox tmpUserEdit.Person.Name & " borrado con éxito."
+180 End If
+
+210 frmAbmPersons.MSFlexGrid_Persons.Clear
+190 Call FormatGrid
+200 Call modDBPersons.LoadPersons
+
+
+220 On Error GoTo 0
+230 Exit Sub
+
+cmdDeletePerson_Click_Error:
+
+240 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento cmdDeletePerson_Click de Formulario frmAbmPersons línea: " & Erl())
+
+End Sub
+
 Private Sub cmdEditPerson_Click()
 
 Dim selectedRow                 As Integer

@@ -41,6 +41,7 @@ Dim RS                          As New ADODB.Recordset
 
     tmpForm.txtName = tmpUserEdit.Person.Name
 
+    'Seleccionamos el tipo de dni
     For i = 0 To tmpForm.cmbIdDNIType.ListCount - 1
         If tmpForm.cmbIdDNIType.ItemData(i) = tmpUserEdit.Person.id_dni Then
             tmpForm.cmbIdDNIType.ListIndex = i    ' Seleccionar el ítem
@@ -48,11 +49,11 @@ Dim RS                          As New ADODB.Recordset
         End If
     Next i
 
-    'tmpForm.cmbIdDNIType = RS.Fields("id_tipo_documento")
     tmpForm.txtDNI.Text = tmpUserEdit.Person.dni
     tmpForm.txtDateBirth.Text = tmpUserEdit.Person.DateBirth
     tmpForm.cmbGenre = tmpUserEdit.Person.Genre
 
+    'Seleccionamos la provincia:
     If Len(RS.Fields("provincia")) > 0 Then
         For i = 0 To tmpForm.cmbState.ListCount - 1
             If tmpForm.cmbState.ItemData(i) = RS.Fields("id_provincia") Then
@@ -62,7 +63,9 @@ Dim RS                          As New ADODB.Recordset
         Next i
     End If
     
+    'Cargamos y seleccionamos la localidad, para poder obtener el código postal.
     If Len(RS.Fields("localidad")) > 0 Then
+        Call LoadLocality(frmPerson)
         For i = 0 To tmpForm.cmbLocality.ListCount - 1
             If tmpForm.cmbLocality.ItemData(i) = RS.Fields("id_localidad") Then
                 tmpForm.cmbLocality.ListIndex = i    ' Seleccionar el ítem
@@ -71,6 +74,7 @@ Dim RS                          As New ADODB.Recordset
         Next i
     End If
 
+    'Seleccionamos el género de la persona:
     For i = 0 To tmpForm.cmbGenre.ListCount - 1
         If tmpForm.cmbGenre.List(i) = RS.Fields("genero") Then
             tmpForm.cmbGenre.ListIndex = i    ' Seleccionar el ítem
@@ -305,7 +309,12 @@ Dim cmbIndex                    As Long
 10  Debug.Print "Form: " & tmpForm.Name
 
     ' Consulta para obtener los datos de tipos_documentos
-20  sQuery = "SELECT id_localidad, nombre, id_provincia, codigo_postal FROM localidades "
+    
+    If tmpForm.cmbState.ListIndex < 0 Then
+        Exit Sub
+    End If
+    
+20  sQuery = "SELECT id_localidad, nombre, id_provincia, codigo_postal FROM localidades WHERE id_provincia = " & tmpForm.cmbState.ItemData(tmpForm.cmbState.ListIndex)
 
     ' Ejecutar la consulta y abrir un Recordset
 30  Set RS = New ADODB.Recordset
@@ -354,10 +363,10 @@ Dim RS                          As ADODB.Recordset
 10  On Error GoTo PersonCreate_Error
 
     'Puede existir una persona con el mismo nombre...
-    '20  If modDB.Exists("personas", "nombre_apellido", tmpUser.Person.Name& " " & tmpUser.Person.LastName) Then
-    '30      sErrorMsg = "El nombre y apellido elegido ya están en uso, por favor utilice otro."
-    '40      Exit Function
-    '50  End If
+      If modDB.Exists("personas", "nombre_apellido", tmpUser.Person.Name) Then
+          sErrorMsg = "El nombre y apellido elegido ya están en uso, por favor utilice otro."
+          Exit Function
+      End If
 
     'Validamos la existencia del correo electrónico
 20  If modDB.Exists("personas", "correo_electronico", tmpUser.Person.Email) Then
@@ -470,3 +479,25 @@ Dim dayPart                     As String
     End If
 End Function
 
+Function PersonDelete(ByRef tmpUser As tUser) As Boolean
+
+Dim sQuery                      As String
+Dim RS                          As ADODB.Recordset
+
+   On Error GoTo PersonDelete_Error
+
+11    sQuery = "DELETE FROM usuarios WHERE num_documento = " & tmpUser.Person.dni & " AND id_tipodocumento = " & tmpUser.Person.id_dni
+21    Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
+
+10    sQuery = "DELETE FROM personas WHERE id = " & tmpUser.Person.id
+20    Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
+30    PersonDelete = True
+
+   On Error GoTo 0
+   Exit Function
+
+PersonDelete_Error:
+    PersonDelete = False
+    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento PersonDelete de Módulo modDBPersons línea: " & Erl())
+
+End Function
