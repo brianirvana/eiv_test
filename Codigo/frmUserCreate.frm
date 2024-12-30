@@ -18,7 +18,7 @@ Begin VB.Form frmUserCreate
       Caption         =   "X"
       Height          =   255
       Left            =   5400
-      TabIndex        =   10
+      TabIndex        =   9
       Top             =   120
       Width           =   255
    End
@@ -28,7 +28,7 @@ Begin VB.Form frmUserCreate
       ForeColor       =   &H00FFFFFF&
       Height          =   315
       Left            =   1440
-      TabIndex        =   3
+      TabIndex        =   2
       Text            =   "cmbIdTipodocumento"
       Top             =   1800
       Width           =   2895
@@ -41,24 +41,12 @@ Begin VB.Form frmUserCreate
       ForeColor       =   &H00FFFFFF&
       Height          =   375
       Left            =   1440
-      TabIndex        =   4
+      TabIndex        =   3
       Text            =   "DNI"
       Top             =   2280
       Width           =   2895
    End
-   Begin VB.TextBox txtLastName 
-      Alignment       =   2  'Center
-      Appearance      =   0  'Flat
-      BackColor       =   &H00000000&
-      ForeColor       =   &H00FFFFFF&
-      Height          =   375
-      Left            =   1440
-      TabIndex        =   2
-      Text            =   "Apellido"
-      Top             =   1320
-      Width           =   2895
-   End
-   Begin VB.TextBox txtFirstName 
+   Begin VB.TextBox txtName 
       Alignment       =   2  'Center
       Appearance      =   0  'Flat
       BackColor       =   &H00000000&
@@ -67,7 +55,7 @@ Begin VB.Form frmUserCreate
       Left            =   1440
       TabIndex        =   1
       Text            =   "Nombre"
-      Top             =   840
+      Top             =   1320
       Width           =   2895
    End
    Begin VB.CommandButton cmdGoBack 
@@ -75,7 +63,7 @@ Begin VB.Form frmUserCreate
       Caption         =   "Volver"
       Height          =   615
       Left            =   1560
-      TabIndex        =   8
+      TabIndex        =   7
       Top             =   5280
       Width           =   2895
    End
@@ -84,7 +72,7 @@ Begin VB.Form frmUserCreate
       Caption         =   "Crear usuario"
       Height          =   615
       Left            =   1560
-      TabIndex        =   7
+      TabIndex        =   6
       Top             =   4560
       Width           =   2895
    End
@@ -95,7 +83,7 @@ Begin VB.Form frmUserCreate
       ForeColor       =   &H00FFFFFF&
       Height          =   375
       Left            =   1440
-      TabIndex        =   6
+      TabIndex        =   5
       Text            =   "E-mail"
       Top             =   3240
       Width           =   2895
@@ -107,7 +95,7 @@ Begin VB.Form frmUserCreate
       ForeColor       =   &H00FFFFFF&
       Height          =   375
       Left            =   1440
-      TabIndex        =   5
+      TabIndex        =   4
       Text            =   "Contraseña"
       Top             =   2760
       Width           =   2895
@@ -121,7 +109,7 @@ Begin VB.Form frmUserCreate
       Left            =   1440
       TabIndex        =   0
       Text            =   "Usuario"
-      Top             =   360
+      Top             =   840
       Width           =   2895
    End
    Begin VB.Label lblInfo 
@@ -132,7 +120,7 @@ Begin VB.Form frmUserCreate
       ForeColor       =   &H0080FFFF&
       Height          =   855
       Left            =   240
-      TabIndex        =   9
+      TabIndex        =   8
       Top             =   3720
       Width           =   5295
    End
@@ -176,7 +164,7 @@ Dim tmpUser                     As tUser
 10  On Error GoTo cmdCreateUser_Click_Error
 
 20  tmpUser.UserName = txtUserName.Text
-30  tmpUser.Person.Name = txtFirstName.Text
+30  tmpUser.Person.Name = txtName.Text
 
 50  If cmbIdDNIType.ListIndex = -1 Then
 60      MsgBox "Por favor, debe seleccionar un tipo de documento."
@@ -254,15 +242,15 @@ Private Sub txtEmail_Change()
     End If
 End Sub
 
-Private Sub txtFirstName_Click()
-    Call CheckTxtControlMouseDown(txtFirstName)
+Private Sub txtName_Click()
+    Call CheckTxtControlMouseDown(txtName)
 End Sub
 
-Private Sub txtFirstName_KeyPress(KeyAscii As Integer)
+Private Sub txtName_KeyPress(KeyAscii As Integer)
 
     If (KeyAscii <> 8) Then
         ' Verificar si el carácter no es una letra (minúscula o mayúscula)
-        If (KeyAscii < 65 Or KeyAscii > 90) And (KeyAscii < 97 Or KeyAscii > 122) Then
+        If (KeyAscii < 65 Or KeyAscii > 90) And (KeyAscii < 97 Or KeyAscii > 122) And KeyAscii <> 32 Then
             KeyAscii = 0
         End If
     End If
@@ -296,8 +284,8 @@ Private Sub txtEmail_LostFocus()
     Call CheckTxtControlMouseUp(txtEmail)
 End Sub
 
-Private Sub txtFirstName_LostFocus()
-    Call CheckTxtControlMouseUp(txtFirstName)
+Private Sub txtName_LostFocus()
+    Call CheckTxtControlMouseUp(txtName)
 End Sub
 
 Private Sub txtUserName_LostFocus()
@@ -308,8 +296,8 @@ Private Sub txtPassword_LostFocus()
     Call CheckTxtControlMouseUp(txtPassword)
 End Sub
 
-Private Sub txtFirstName_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
-    Call CheckTxtControlMouseDown(txtFirstName)
+Private Sub txtName_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    Call CheckTxtControlMouseDown(txtName)
 End Sub
 
 Private Sub txtPassword_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
