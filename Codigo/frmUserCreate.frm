@@ -221,7 +221,7 @@ Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y A
 End Sub
 
 Private Sub txtDNI_Change()
-    If Len(txtDNI.Text) > 1000 Then
+    If Len(txtDNI.Text) > 3 Then
         txtDNI.Text = NumberToPunctuatedString(txtDNI.Text)
     End If
 End Sub

@@ -25,7 +25,7 @@ Dim RS                          As New ADODB.Recordset
     tmpUserEdit.Person.id = Val(RS.Fields("id"))
     tmpUserEdit.Person.Name = RS.Fields("nombre_apellido")
     tmpUserEdit.Person.id_dni = Val(RS.Fields("id_tipo_documento"))
-    tmpUserEdit.Person.dni = Val(RS.Fields("num_documento"))
+    tmpUserEdit.Person.dni = NumberToPunctuatedString(Val(RS.Fields("num_documento")))
     tmpUserEdit.Person.DateBirth = FormatDateForVB6(RS.Fields("fecha_nacimiento") & vbNullString)
     tmpUserEdit.Person.Genre = RS.Fields("genero") & vbNullString
     tmpUserEdit.Person.id_locality = Val(RS.Fields("id_localidad") & vbNullString)
@@ -132,7 +132,7 @@ Dim RS                          As New ADODB.Recordset
 
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 0) = RS("id")
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 1) = RS("tipo_documento")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 2) = RS("num_documento")
+        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 2) = NumberToPunctuatedString(RS("num_documento"))
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 3) = RS("nombre_apellido")
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 4) = RS("fecha_nacimiento") & vbNullString
         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 5) = RS("genero") & vbNullString

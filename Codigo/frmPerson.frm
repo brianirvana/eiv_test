@@ -413,6 +413,10 @@ Private Sub txtDNI_Change()
     If Not modUser.ValidateDNI(txtDNI.Text) Then
         lblInfo.Caption = "El DNI es inválido al parecer."
     End If
+    
+    If Len(txtDNI.Text) > 3 Then
+        txtDNI.Text = NumberToPunctuatedString(txtDNI.Text)
+    End If
 End Sub
 
 Private Sub txtDNI_KeyPress(KeyAscii As Integer)
