@@ -229,7 +229,7 @@ Dim tmpValues()                 As String
 130 ElseIf Not Len(tmpUser.UserName) > 3 Then
 140     sErrorMsg = "El nombre de usuario debe contener al menos 3 letras."
 150     Exit Function
-160 ElseIf tmpUser.Person.Name = "Nombre" Then
+160 ElseIf tmpUser.Person.Name = "Nombre y apellido" Then
 170     sErrorMsg = "Ingrese un nombre y apellido válido por favor."
 180     Exit Function
 190 ElseIf Not Len(tmpUser.Person.Name) > 3 Then
@@ -322,7 +322,7 @@ Public Function CheckTxtControlMouseDown(ByRef txtControl As TextBox)
 
     On Error GoTo CheckTxtControlMouseDown_Error
 
-    If txtControl.Text = "Usuario" Or txtControl.Text = "Nombre" Or txtControl.Text = "Apellido" Or txtControl.Text = "DNI" _
+    If txtControl.Text = "Usuario" Or txtControl.Text = "Nombre y apellido" Or txtControl.Text = "DNI" _
     Or txtControl.Text = "Contraseña" Or txtControl.Text = "E-mail" Or txtControl.Text = "Fecha nacimiento" Then
         txtControl.Text = vbNullString
     End If
@@ -350,10 +350,8 @@ Public Function CheckTxtControlMouseUp(ByRef txtControl As TextBox)
     If StrComp(UCase$(txtControl.Text), vbNullString) = 0 Or StrComp(UCase$(txtControl.Text), " ") = 0 Then
         If txtControl.Name = "txtUserName" Then
             txtControl.Text = "Usuario"
-        ElseIf txtControl.Name = "txtFirstName" Then
-            txtControl.Text = "Nombre"
         ElseIf txtControl.Name = "txtName" Then
-            txtControl.Text = "Apellido"
+            txtControl.Text = "Nombre y apellido"
         ElseIf txtControl.Name = "txtDNI" Then
             txtControl.Text = "DNI"
         ElseIf txtControl.Name = "txtPassword" Then

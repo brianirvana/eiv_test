@@ -54,7 +54,7 @@ Begin VB.Form frmUserCreate
       Height          =   375
       Left            =   1440
       TabIndex        =   1
-      Text            =   "Nombre"
+      Text            =   "Nombre y apellido"
       Top             =   1320
       Width           =   2895
    End

@@ -20,7 +20,7 @@ Dim tmpValues()                 As String
 80  tmpValues(1) = tmpUser.Person.id_dni
 90  tmpValues(2) = tmpUser.Person.dni
 
-100 If tmpUser.Person.Name = "Nombre" Then
+100 If tmpUser.Person.Name = "Nombre y apellido" Then
 110     sErrorMsg = "Ingrese un nombre y apellido válidos por favor."
 120     Exit Function
 130 ElseIf Not Len(tmpUser.Person.Name) > 3 Then
@@ -60,7 +60,7 @@ Dim tmpValues()                 As String
 
 10  On Error GoTo ValidatePersonEdit_Error
 
-20  If tmpUser.Person.Name = "Nombre" Then
+20  If tmpUser.Person.Name = "Nombre y apellido" Then
 30      sErrorMsg = "Ingrese un nombre y apellido válidos por favor."
 40      Exit Function
 50  ElseIf Not Len(tmpUser.Person.Name) > 3 Then
