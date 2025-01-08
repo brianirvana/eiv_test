@@ -273,6 +273,10 @@ Private Sub cmdGoBack_Click()
     Unload Me
 End Sub
 
+Private Sub cmdGoBack_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    lblInfo.Caption = "Volver al listado de personas"
+End Sub
+
 Private Sub cmdPersonAction_Click()
 
 Dim sErrorMsg                   As String
@@ -378,6 +382,17 @@ Dim sErrorMsg                   As String
 cmdPersonAction_Click_Error:
 
 680 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento cmdCreatePerson_Click de Formulario frmPerson línea: " & Erl())
+
+End Sub
+
+Private Sub cmdPersonAction_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+
+    Select Case TypeMode
+        Case eTypeMode.PersonCreate
+            lblInfo.Caption = "Añadir nueva persona"
+        Case eTypeMode.PersonEdit
+            lblInfo.Caption = "Editar persona"
+    End Select
 
 End Sub
 
@@ -540,6 +555,7 @@ End Sub
 
 Private Sub txtEmail_GotFocus()
     Call CheckTxtControlMouseDown(txtEmail)
+    lblInfo.Caption = "Ingrese el e-mail de contacto"
 End Sub
 
 Private Sub txtEmail_LostFocus()
