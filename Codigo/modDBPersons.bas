@@ -28,7 +28,7 @@ Dim RS                          As New ADODB.Recordset
 70  tmpUserEdit.Person.dni = NumberToPunctuatedString(Val(RS.Fields("num_documento")))
 80  tmpUserEdit.Person.DateBirth = FormatDateForVB6(RS.Fields("fecha_nacimiento") & vbNullString)
 90  tmpUserEdit.Person.Genre = RS.Fields("genero") & vbNullString
-100 tmpUserEdit.Person.id_locality = Val(RS.Fields("id_localidad") & vbNullString)
+100 tmpUserEdit.Person.Id_Locality = Val(RS.Fields("id_localidad") & vbNullString)
 110 tmpUserEdit.Person.id_state = Val(RS.Fields("id_provincia") & vbNullString)
 120 tmpUserEdit.Person.zip_code = Val(RS.Fields("codigo_postal") & vbNullString)
 130 tmpUserEdit.Person.email = RS.Fields("correo_electronico")
@@ -272,14 +272,14 @@ End Sub
 ' Purpose   :
 '---------------------------------------------------------------------------------------
 '
-Function GetZipCodeFromLocality(ByRef tmpUser As tUser, ByRef sErrorMsg As String) As Long
+Function GetZipCodeFromLocality(ByVal Id_Locality As Long, ByRef sErrorMsg As String) As Long
 
 Dim sQuery                      As String
 Dim RS                          As ADODB.Recordset
 
 10  On Error GoTo GetZipCodeFromLocality_Error
 
-20  sQuery = "SELECT codigo_postal FROM localidades WHERE id_localidad = " & tmpUser.Person.id_locality
+20  sQuery = "SELECT codigo_postal FROM localidades WHERE id_localidad = " & Id_Locality
 
     ' Ejecutar la consulta y abrir un Recordset
 30  Set RS = New ADODB.Recordset
@@ -407,7 +407,7 @@ Dim RS                          As ADODB.Recordset
 
     'Primero insertamos los datos del usuario en la tabla "personas" para garantizar que las claves foráneas requeridas en la tabla "usuarios" (id_tipodocumento, num_documento) existan.
     'Esto evita conflictos de integridad referencial al insertar en la tabla "usuarios".
-190 sQuery = "INSERT INTO personas (id_tipodocumento, num_documento, nombre_apellido, fecha_nacimiento, genero, es_argentino, correo_electronico, id_localidad, codigo_postal)  VALUES ( " & tmpUser.Person.id_dni & "," & tmpUser.Person.dni & ",'" & tmpUser.Person.Name & "','" & FormatDateForMySQL(tmpUser.Person.DateBirth) & "','" & tmpUser.Person.Genre & "'," & IIf(CBool(tmpUser.Person.is_argentine), 1, 0) & ",'" & tmpUser.Person.email & "'," & tmpUser.Person.id_locality & "," & tmpUser.Person.zip_code & ")"
+190 sQuery = "INSERT INTO personas (id_tipodocumento, num_documento, nombre_apellido, fecha_nacimiento, genero, es_argentino, correo_electronico, id_localidad, codigo_postal)  VALUES ( " & tmpUser.Person.id_dni & "," & tmpUser.Person.dni & ",'" & tmpUser.Person.Name & "','" & FormatDateForMySQL(tmpUser.Person.DateBirth) & "','" & tmpUser.Person.Genre & "'," & IIf(CBool(tmpUser.Person.is_argentine), 1, 0) & ",'" & tmpUser.Person.email & "'," & tmpUser.Person.Id_Locality & "," & tmpUser.Person.zip_code & ")"
 200 Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
 
 230 PersonCreate = True
@@ -438,7 +438,7 @@ Dim RS                          As ADODB.Recordset
              "genero = '" & tmpUser.Person.Genre & "', " & _
              "es_argentino = " & IIf(CBool(tmpUser.Person.is_argentine), 1, 0) & ", " & _
              "correo_electronico = '" & tmpUser.Person.email & "', " & _
-             "id_localidad = " & tmpUser.Person.id_locality & ", " & _
+             "id_localidad = " & tmpUser.Person.Id_Locality & ", " & _
              "codigo_postal = '" & tmpUser.Person.zip_code & "' " & _
              "WHERE id = " & tmpUser.Person.id
 

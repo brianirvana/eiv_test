@@ -213,12 +213,42 @@ Private Sub cmbIdDNIType_GotFocus()
 
 End Sub
 
+Private Sub cmbLocality_Change()
+    'Call AutoCompleteZipCode
+End Sub
+
+Private Sub cmbLocality_Click()
+    Call AutoCompleteZipCode
+End Sub
+
 Private Sub cmbLocality_GotFocus()
     If cmbLocality.Text = "Localidad" Then
         lblInfo.Caption = "Seleccione una localidad."
     Else
         lblInfo.Caption = ""
     End If
+End Sub
+
+Private Sub cmbLocality_KeyPress(KeyAscii As Integer)
+    Call AutoCompleteZipCode
+End Sub
+
+Private Sub AutoCompleteZipCode()
+
+    If cmbLocality.ListIndex > -1 Then
+        Dim sErrorMsg As String
+        
+        txtZipCode.Text = GetZipCodeFromLocality(cmbLocality.ItemData(cmbLocality.ListIndex), sErrorMsg)
+        
+        If Len(sErrorMsg) > 0 Then
+            MsgBox sErrorMsg
+        End If
+    End If
+
+End Sub
+
+Private Sub cmbLocality_LostFocus()
+    Call AutoCompleteZipCode
 End Sub
 
 Private Sub cmbState_GotFocus()
@@ -259,14 +289,14 @@ Dim sErrorMsg                   As String
 80      Exit Sub
 90  End If
 
-100 tmpUserEdit.Person.id_locality = cmbLocality.ItemData(cmbLocality.ListIndex)
+100 tmpUserEdit.Person.Id_Locality = cmbLocality.ItemData(cmbLocality.ListIndex)
 
 110 If cmbState.ListIndex = -1 Then
 120     MsgBox "Por favor, debe seleccionar la provincia de la persona."
 130     Exit Sub
 140 End If
 
-150 tmpUserEdit.Person.id_locality = cmbState.ItemData(cmbState.ListIndex)
+150 tmpUserEdit.Person.Id_Locality = cmbState.ItemData(cmbState.ListIndex)
     'tmpUserEdit.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
 
 160 If cmbGenre.ListIndex = -1 Then
@@ -295,7 +325,7 @@ Dim sErrorMsg                   As String
 280         tmpUser.Person.Genre = cmbGenre.Text
 
 290         tmpUser.Person.id_state = cmbState.ItemData(cmbState.ListIndex)
-300         tmpUser.Person.id_locality = cmbLocality.ItemData(cmbLocality.ListIndex)
+300         tmpUser.Person.Id_Locality = cmbLocality.ItemData(cmbLocality.ListIndex)
 
             'Dejo como opcional el código postal, sin la necesidad de precargarlo en base a la localidad. Requerimiento Tarea - 001
             'tmpUser.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
@@ -323,7 +353,7 @@ Dim sErrorMsg                   As String
 490         tmpUserEdit.Person.Genre = cmbGenre.Text
 
 500         tmpUserEdit.Person.id_state = cmbState.ItemData(cmbState.ListIndex)
-510         tmpUserEdit.Person.id_locality = cmbLocality.ItemData(cmbLocality.ListIndex)
+510         tmpUserEdit.Person.Id_Locality = cmbLocality.ItemData(cmbLocality.ListIndex)
             'tmpUserEdit.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
 
 520         If Not ValidatePersonEdit(tmpUserEdit, sErrorMsg) Then
