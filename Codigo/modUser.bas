@@ -366,6 +366,8 @@ Public Function CheckTxtControlMouseUp(ByRef txtControl As TextBox)
             txtControl.MaxLength = 20
             txtControl.Text = "Fecha nacimiento"
             txtControl.MaxLength = 10
+        ElseIf txtControl.Name = "txtZipCode" Then
+            txtControl.Text = "Código Postal"
         End If
         Exit Function
     End If

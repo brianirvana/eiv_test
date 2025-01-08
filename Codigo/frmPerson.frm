@@ -560,3 +560,7 @@ Private Sub txtZipCode_KeyPress(KeyAscii As Integer)
         End If
     End If
 End Sub
+
+Private Sub txtZipCode_LostFocus()
+    Call CheckTxtControlMouseUp(txtZipCode)
+End Sub

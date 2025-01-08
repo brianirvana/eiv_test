@@ -9,9 +9,9 @@ Dim query                       As String
 Dim RS                          As New ADODB.Recordset
 
     ' Query para listar personas
-    On Error GoTo LoadPersonas_Error
+10  On Error GoTo LoadPersonas_Error
 
-    query = "SELECT p.id, p.id_tipodocumento as id_tipo_documento, t.nombre AS tipo_documento, " & _
+20  query = "SELECT p.id, p.id_tipodocumento as id_tipo_documento, t.nombre AS tipo_documento, " & _
             "p.num_documento, p.nombre_apellido, p.fecha_nacimiento, " & _
             "p.genero, l.id_localidad, l.nombre AS localidad, l.id_provincia, pv.nombre as provincia, p.codigo_postal, p.correo_electronico, p.es_argentino " & _
             "FROM personas p " & _
@@ -20,80 +20,84 @@ Dim RS                          As New ADODB.Recordset
             "LEFT JOIN provincias pv ON pv.id_provincia = l.id_provincia " & _
             " WHERE p.id = " & tmpUserEdit.Person.id
 
-    Set RS = cn.Execute(query)
+30  Set RS = cn.Execute(query)
 
-    tmpUserEdit.Person.id = Val(RS.Fields("id"))
-    tmpUserEdit.Person.Name = RS.Fields("nombre_apellido")
-    tmpUserEdit.Person.id_dni = Val(RS.Fields("id_tipo_documento"))
-    tmpUserEdit.Person.dni = NumberToPunctuatedString(Val(RS.Fields("num_documento")))
-    tmpUserEdit.Person.DateBirth = FormatDateForVB6(RS.Fields("fecha_nacimiento") & vbNullString)
-    tmpUserEdit.Person.Genre = RS.Fields("genero") & vbNullString
-    tmpUserEdit.Person.id_locality = Val(RS.Fields("id_localidad") & vbNullString)
-    tmpUserEdit.Person.id_state = Val(RS.Fields("id_provincia") & vbNullString)
-    tmpUserEdit.Person.zip_code = Val(RS.Fields("codigo_postal") & vbNullString)
-    tmpUserEdit.Person.email = RS.Fields("correo_electronico")
-    tmpUserEdit.Person.is_argentine = IIf(CBool(RS.Fields("es_argentino")), True, False)
+40  tmpUserEdit.Person.id = Val(RS.Fields("id"))
+50  tmpUserEdit.Person.Name = RS.Fields("nombre_apellido")
+60  tmpUserEdit.Person.id_dni = Val(RS.Fields("id_tipo_documento"))
+70  tmpUserEdit.Person.dni = NumberToPunctuatedString(Val(RS.Fields("num_documento")))
+80  tmpUserEdit.Person.DateBirth = FormatDateForVB6(RS.Fields("fecha_nacimiento") & vbNullString)
+90  tmpUserEdit.Person.Genre = RS.Fields("genero") & vbNullString
+100 tmpUserEdit.Person.id_locality = Val(RS.Fields("id_localidad") & vbNullString)
+110 tmpUserEdit.Person.id_state = Val(RS.Fields("id_provincia") & vbNullString)
+120 tmpUserEdit.Person.zip_code = Val(RS.Fields("codigo_postal") & vbNullString)
+130 tmpUserEdit.Person.email = RS.Fields("correo_electronico")
+140 tmpUserEdit.Person.is_argentine = IIf(CBool(RS.Fields("es_argentino")), True, False)
 
-    If tmpUserEdit.Person.id <= 0 Then
-        MsgBox "Error al cargar la persona " & tmpUserEdit.Person.Name & ". Al parecer no tiene id en la base de datos."
-        Exit Sub
-    End If
+150 If tmpUserEdit.Person.id <= 0 Then
+160     MsgBox "Error al cargar la persona " & tmpUserEdit.Person.Name & ". Al parecer no tiene id en la base de datos."
+170     Exit Sub
+180 End If
 
-    tmpForm.txtName = tmpUserEdit.Person.Name
+190 tmpForm.txtName = tmpUserEdit.Person.Name
 
     'Seleccionamos el tipo de dni
-    For i = 0 To tmpForm.cmbIdDNIType.ListCount - 1
-        If tmpForm.cmbIdDNIType.ItemData(i) = tmpUserEdit.Person.id_dni Then
-            tmpForm.cmbIdDNIType.ListIndex = i    ' Seleccionar el ítem
-            Exit For
-        End If
-    Next i
+200 For i = 0 To tmpForm.cmbIdDNIType.ListCount - 1
+210     If tmpForm.cmbIdDNIType.ItemData(i) = tmpUserEdit.Person.id_dni Then
+220         tmpForm.cmbIdDNIType.ListIndex = i    ' Seleccionar el ítem
+230         Exit For
+240     End If
+250 Next i
 
-    tmpForm.txtDNI.Text = tmpUserEdit.Person.dni
-    tmpForm.txtDateBirth.Text = tmpUserEdit.Person.DateBirth
-    tmpForm.cmbGenre = tmpUserEdit.Person.Genre
+260 tmpForm.txtDNI.Text = tmpUserEdit.Person.dni
+270 tmpForm.txtDateBirth.Text = tmpUserEdit.Person.DateBirth
+280 tmpForm.cmbGenre = tmpUserEdit.Person.Genre
 
     'Seleccionamos la provincia:
-    If Len(RS.Fields("provincia")) > 0 Then
-        For i = 0 To tmpForm.cmbState.ListCount - 1
-            If tmpForm.cmbState.ItemData(i) = RS.Fields("id_provincia") Then
-                tmpForm.cmbState.ListIndex = i    ' Seleccionar el ítem
-                Exit For
-            End If
-        Next i
-    End If
-    
+290 If Len(RS.Fields("provincia")) > 0 Then
+300     For i = 0 To tmpForm.cmbState.ListCount - 1
+310         If tmpForm.cmbState.ItemData(i) = RS.Fields("id_provincia") Then
+320             tmpForm.cmbState.ListIndex = i    ' Seleccionar el ítem
+330             Exit For
+340         End If
+350     Next i
+360 End If
+
     'Cargamos y seleccionamos la localidad, para poder obtener el código postal.
-    If Len(RS.Fields("localidad")) > 0 Then
-        Call LoadLocality(frmPerson)
-        For i = 0 To tmpForm.cmbLocality.ListCount - 1
-            If tmpForm.cmbLocality.ItemData(i) = RS.Fields("id_localidad") Then
-                tmpForm.cmbLocality.ListIndex = i    ' Seleccionar el ítem
-                Exit For
-            End If
-        Next i
-    End If
+370 If Len(RS.Fields("localidad")) > 0 Then
+380     Call LoadLocality(frmPerson)
+390     For i = 0 To tmpForm.cmbLocality.ListCount - 1
+400         If tmpForm.cmbLocality.ItemData(i) = RS.Fields("id_localidad") Then
+410             tmpForm.cmbLocality.ListIndex = i    ' Seleccionar el ítem
+420             Exit For
+430         End If
+440     Next i
+450 End If
 
     'Seleccionamos el género de la persona:
-    For i = 0 To tmpForm.cmbGenre.ListCount - 1
-        If tmpForm.cmbGenre.List(i) = RS.Fields("genero") Then
-            tmpForm.cmbGenre.ListIndex = i    ' Seleccionar el ítem
-            Exit For
-        End If
-    Next i
+460 For i = 0 To tmpForm.cmbGenre.ListCount - 1
+470     If tmpForm.cmbGenre.List(i) = RS.Fields("genero") Then
+480         tmpForm.cmbGenre.ListIndex = i    ' Seleccionar el ítem
+490         Exit For
+500     End If
+510 Next i
 
-    tmpForm.txtEmail.Text = RS("correo_electronico")
-    tmpForm.chkIsArgentine.Value = IIf(CBool(RS("es_argentino")), vbChecked, vbUnchecked)
+520 tmpForm.txtEmail.Text = RS("correo_electronico")
+530 tmpForm.chkIsArgentine.Value = IIf(CBool(RS("es_argentino")), vbChecked, vbUnchecked)
 
-    Set RS = Nothing
+540 If Val(RS.Fields("codigo_postal")) > 0 Then
+550     tmpForm.txtZipCode.Text = RS.Fields("codigo_postal") & vbNullString
+560 End If
 
-    On Error GoTo 0
-    Exit Sub
+570 Set RS = Nothing
+
+580 On Error GoTo 0
+590 Exit Sub
 
 LoadPersonas_Error:
-    If Not RS Is Nothing Then RS.Close
-    Set RS = Nothing
-    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento LoadPersonas de Módulo modDBPersons línea: " & Erl())
+600 If Not RS Is Nothing Then RS.Close
+610 Set RS = Nothing
+620 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento LoadPersonas de Módulo modDBPersons línea: " & Erl())
 
 End Sub
 
@@ -111,9 +115,9 @@ Dim query                       As String
 Dim RS                          As New ADODB.Recordset
 
     ' Query para listar personas
-    On Error GoTo LoadPersons_Error
+10  On Error GoTo LoadPersons_Error
 
-    query = "SELECT p.id, p.id_tipodocumento, t.nombre AS tipo_documento, " & _
+20  query = "SELECT p.id, p.id_tipodocumento, t.nombre AS tipo_documento, " & _
             "p.num_documento, p.nombre_apellido, p.fecha_nacimiento, " & _
             "p.genero, l.nombre AS localidad, pv.nombre as provincia, p.codigo_postal, p.correo_electronico, p.es_argentino " & _
             "FROM personas p " & _
@@ -121,39 +125,41 @@ Dim RS                          As New ADODB.Recordset
             "LEFT JOIN localidades l ON p.id_localidad = l.id_localidad " & _
             "LEFT JOIN provincias pv ON pv.id_provincia = l.id_provincia "
 
-    Set RS = cn.Execute(query)
+30  Set RS = cn.Execute(query)
 
-    Debug.Print "Count persons: " & RS.RecordCount
+40  Debug.Print "Count persons: " & RS.RecordCount
 
     ' Llenar la grilla con los datos
-    row = 1
-    While Not RS.EOF
-        frmAbmPersons.MSFlexGrid_Persons.AddItem ""
+50  row = 1
+60  While Not RS.EOF
+70      frmAbmPersons.MSFlexGrid_Persons.AddItem ""
 
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 0) = RS("id")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 1) = RS("tipo_documento")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 2) = NumberToPunctuatedString(RS("num_documento"))
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 3) = RS("nombre_apellido")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 4) = RS("fecha_nacimiento") & vbNullString
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 5) = RS("genero") & vbNullString
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 6) = RS("localidad") & " - " & RS("provincia")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 7) = RS("codigo_postal") & vbNullString
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 8) = RS("correo_electronico")
-        frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 9) = IIf(CBool(RS("es_argentino")), "SI", "NO")
+80      frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 0) = RS("id")
+90      frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 1) = RS("tipo_documento")
+100     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 2) = NumberToPunctuatedString(RS("num_documento"))
+110     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 3) = RS("nombre_apellido")
+120     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 4) = RS("fecha_nacimiento") & vbNullString
+130     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 5) = RS("genero") & vbNullString
+140     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 6) = RS("localidad") & " - " & RS("provincia")
+150     If Val(RS("codigo_postal")) > 0 Then
+160         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 7) = RS("codigo_postal") & vbNullString
+170     End If
+180     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 8) = RS("correo_electronico")
+190     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 9) = IIf(CBool(RS("es_argentino")), "SI", "NO")
 
-        RS.MoveNext
-        row = row + 1
-    Wend
+200     RS.MoveNext
+210     row = row + 1
+220 Wend
 
-    Set RS = Nothing
+230 Set RS = Nothing
 
-    On Error GoTo 0
-    Exit Sub
+240 On Error GoTo 0
+250 Exit Sub
 
 LoadPersons_Error:
-    If Not RS Is Nothing Then RS.Close
-    Set RS = Nothing
-    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento LoadPersons de Módulo modDBPersons línea: " & Erl())
+260 If Not RS Is Nothing Then RS.Close
+270 Set RS = Nothing
+280 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento LoadPersons de Módulo modDBPersons línea: " & Erl())
 
 End Sub
 
