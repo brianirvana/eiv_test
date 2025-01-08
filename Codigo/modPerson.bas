@@ -26,19 +26,25 @@ Dim tmpValues()                 As String
 130 ElseIf Not Len(tmpUser.Person.Name) > 3 Then
 140     sErrorMsg = "El nombre y apellido deben contener al menos 3 letras."
 150     Exit Function
-220 ElseIf CStr(tmpUser.Person.id_dni) = 0 Then
-230     sErrorMsg = "Ingrese un tipo de documento por favor."
-240 ElseIf CStr(tmpUser.Person.dni) = "DNI" Then
-250     sErrorMsg = "Ingrese un DNI válido por favor."
+160 ElseIf CStr(tmpUser.Person.id_dni) = 0 Then
+170     sErrorMsg = "Ingrese un tipo de documento por favor."
+180 ElseIf CStr(tmpUser.Person.dni) = "DNI" Then
+190     sErrorMsg = "Ingrese un DNI válido por favor."
+200     Exit Function
+210 ElseIf Not ValidateDNI(tmpUser.Person.dni) Then
+220     sErrorMsg = "Ingrese un DNI válido por favor (que tenga entre 7 u 8 caracteres y sean sólo números)."
+230     Exit Function
+240 ElseIf ExistsArr("personas", tmpFields, tmpValues) Then
+250     sErrorMsg = "El número y tipo de documentos seleccionados, ya están registrados. La persona ya existe en la base de datos."
 260     Exit Function
-270 ElseIf Not ValidateDNI(tmpUser.Person.dni) Then
-280     sErrorMsg = "Ingrese un DNI válido por favor (que tenga entre 7 u 8 caracteres y sean sólo números)."
+270 ElseIf Not ValidateDateBirth(tmpUser) Then
+280     sErrorMsg = "La fecha de nacimiento parece ser inválida. Utilice el formato DD/MM/YYYY (Ej: 01/05/2001)"
 290     Exit Function
-300 ElseIf ExistsArr("personas", tmpFields, tmpValues) Then
-310     sErrorMsg = "El número y tipo de documentos seleccionados, ya están registrados. La persona ya existe en la base de datos."
+300 ElseIf CStr(tmpUser.Person.id_state) < 0 Then
+310     sErrorMsg = "Seleccione una provincia"
 320     Exit Function
-330 ElseIf Not ValidateDateBirth(tmpUser) Then
-340     sErrorMsg = "La fecha de nacimiento parece ser inválida. Utilice el formato DD/MM/YYYY (Ej: 01/05/2001)"
+330 ElseIf CStr(tmpUser.Person.id_locality) < 0 Then
+340     sErrorMsg = "Seleccione una localidad"
 350     Exit Function
 360 End If
 
@@ -151,3 +157,36 @@ ValidateDateBirth_Error:
     Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidateDateBirth de Módulo modPerson línea: " & Erl())
 End Function
 
+'---------------------------------------------------------------------------------------
+' Procedure : ValidateEmail
+' Author    : Brian Sabatier (https://github.com/brianirvana)
+' Date      : 8/1/2025
+' Purpose   : Renombro la función CheckMailString a ValidateEmail para reflejar mejor su funcionalidad. Implementa validación con expresiones regulares según lo
+' solicitado por Franco.
+'---------------------------------------------------------------------------------------
+'
+Function ValidateEmail(ByVal sEmail As String) As Boolean
+
+Dim regex                       As Object
+
+    On Error GoTo ValidateEmail_Error
+
+10  Set regex = CreateObject("VBScript.RegExp")
+20  regex.Pattern = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+30  regex.IgnoreCase = True
+40  regex.Global = False
+
+    ' Verificar si el email cumple con el patrón
+50  ValidateEmail = regex.Test(sEmail)
+
+    ' Liberar el objeto RegExp
+60  Set regex = Nothing
+
+    On Error GoTo 0
+    Exit Function
+
+ValidateEmail_Error:
+    ValidateEmail = False
+    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidateEmail (" & sEmail & ") de Módulo modPerson línea: " & Erl())
+
+End Function

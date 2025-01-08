@@ -173,7 +173,7 @@ Dim tmpUser                     As tUser
 
 90  tmpUser.Person.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
 100 tmpUser.Person.dni = txtDNI.Text
-110 tmpUser.Person.Email = txtEmail.Text
+110 tmpUser.Person.email = txtEmail.Text
 120 tmpUser.Password = txtPassword.Text
 
 130 If Not ValidateUserCreate(tmpUser, sErrorMsg) Then
@@ -235,11 +235,13 @@ Private Sub txtDNI_KeyPress(KeyAscii As Integer)
 End Sub
 
 Private Sub txtEmail_Change()
-    If Not CheckMailString(txtEmail.Text) Then
+
+    If Not modPerson.ValidateEmail(txtEmail.Text) Then
         lblInfo.Caption = "El e-mail parece ser inválido."
     Else
-        lblInfo.Caption = ""
+        lblInfo.Caption = "El e-mail es válido."
     End If
+    
 End Sub
 
 Private Sub txtName_Click()
@@ -315,45 +317,6 @@ End Sub
 Private Sub txtDNI_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Call CheckTxtControlMouseDown(txtDNI)
 End Sub
-
-'---------------------------------------------------------------------------------------
-' Procedure : CheckMailString
-' Author    : [/About] Brian Sabatier https://github.com/brianirvana
-' Date      : 27/12/2024
-' Purpose   :
-'---------------------------------------------------------------------------------------
-'
-Public Function CheckMailString(ByRef sString As String) As Boolean
-
-Dim lPos                        As Long
-Dim lX                          As Long
-Dim iAsc                        As Integer
-
-    On Error GoTo CheckMailString_Error
-
-10  lPos = InStr(sString, "@")    '1er test: Busca un simbolo @
-20  If (lPos <> 0) Then
-
-30      If Not (InStr(lPos, sString, ".", vbBinaryCompare) > lPos + 1) Then Exit Function    '2do test: Busca un simbolo . después de @ + 1
-
-40      For lX = 0 To Len(sString) - 1    '3er test: Recorre todos los caracteres y los valída
-50          If Not (lX = (lPos - 1)) Then    'No chequeamos la '@'
-60              iAsc = Asc(Mid$(sString, (lX + 1), 1))
-70              If Not CMSValidateChar(iAsc) Then Exit Function
-80          End If
-90      Next lX
-
-100     CheckMailString = True    'Finale
-110 End If
-
-    On Error GoTo 0
-    Exit Function
-
-CheckMailString_Error:
-
-    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento CheckMailString de Formulario frmUserCreate línea: " & Erl())
-
-End Function
 
 Private Function CMSValidateChar(ByVal iAsc As Integer) As Boolean
     CMSValidateChar = (iAsc >= 48 And iAsc <= 57) Or (iAsc >= 65 And iAsc <= 90) Or (iAsc >= 97 And iAsc <= 122) Or (iAsc = 95) Or (iAsc = 45) Or (iAsc = 46)
