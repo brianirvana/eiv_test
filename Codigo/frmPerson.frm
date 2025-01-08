@@ -15,11 +15,23 @@ Begin VB.Form frmPerson
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   401
    StartUpPosition =   1  'CenterOwner
+   Begin VB.TextBox txtZipCode 
+      Alignment       =   2  'Center
+      Appearance      =   0  'Flat
+      BackColor       =   &H00000000&
+      ForeColor       =   &H00FFFFFF&
+      Height          =   375
+      Left            =   1680
+      TabIndex        =   5
+      Text            =   "Código Postal"
+      Top             =   3840
+      Width           =   2895
+   End
    Begin VB.CheckBox chkIsArgentine 
       Height          =   195
       Left            =   1680
-      TabIndex        =   8
-      Top             =   5400
+      TabIndex        =   9
+      Top             =   5640
       Width           =   195
    End
    Begin VB.ComboBox cmbGenre 
@@ -30,9 +42,9 @@ Begin VB.Form frmPerson
       ItemData        =   "frmPerson.frx":0000
       Left            =   1680
       List            =   "frmPerson.frx":000A
-      TabIndex        =   6
+      TabIndex        =   7
       Text            =   "Genero"
-      Top             =   4320
+      Top             =   4800
       Width           =   2895
    End
    Begin VB.ComboBox cmbLocality 
@@ -40,7 +52,9 @@ Begin VB.Form frmPerson
       BackColor       =   &H00000000&
       ForeColor       =   &H00FFFFFF&
       Height          =   315
+      ItemData        =   "frmPerson.frx":0014
       Left            =   1680
+      List            =   "frmPerson.frx":0016
       TabIndex        =   4
       Text            =   "Localidad"
       Top             =   3360
@@ -51,7 +65,9 @@ Begin VB.Form frmPerson
       BackColor       =   &H00000000&
       ForeColor       =   &H00FFFFFF&
       Height          =   315
+      ItemData        =   "frmPerson.frx":0018
       Left            =   1680
+      List            =   "frmPerson.frx":001A
       TabIndex        =   3
       Text            =   "Provincia"
       Top             =   2880
@@ -61,7 +77,7 @@ Begin VB.Form frmPerson
       Caption         =   "X"
       Height          =   255
       Left            =   5520
-      TabIndex        =   12
+      TabIndex        =   13
       Top             =   120
       Width           =   255
    End
@@ -73,9 +89,9 @@ Begin VB.Form frmPerson
       Height          =   375
       Left            =   1680
       MaxLength       =   10
-      TabIndex        =   5
+      TabIndex        =   6
       Text            =   "Fecha nacimiento"
-      Top             =   3840
+      Top             =   4320
       Width           =   2895
    End
    Begin VB.TextBox txtEmail 
@@ -85,9 +101,9 @@ Begin VB.Form frmPerson
       ForeColor       =   &H00FFFFFF&
       Height          =   375
       Left            =   1680
-      TabIndex        =   7
+      TabIndex        =   8
       Text            =   "E-mail"
-      Top             =   4800
+      Top             =   5160
       Width           =   2895
    End
    Begin VB.CommandButton cmdPersonAction 
@@ -95,7 +111,7 @@ Begin VB.Form frmPerson
       Caption         =   "Añadir persona"
       Height          =   615
       Left            =   1560
-      TabIndex        =   9
+      TabIndex        =   10
       Top             =   6960
       Width           =   2895
    End
@@ -104,7 +120,7 @@ Begin VB.Form frmPerson
       Caption         =   "Volver"
       Height          =   615
       Left            =   1560
-      TabIndex        =   10
+      TabIndex        =   11
       Top             =   7680
       Width           =   2895
    End
@@ -153,8 +169,8 @@ Begin VB.Form frmPerson
       ForeColor       =   &H00FFFFFF&
       Height          =   375
       Left            =   1920
-      TabIndex        =   13
-      Top             =   5400
+      TabIndex        =   14
+      Top             =   5640
       Width           =   1095
    End
    Begin VB.Label lblInfo 
@@ -165,8 +181,8 @@ Begin VB.Form frmPerson
       ForeColor       =   &H0080FFFF&
       Height          =   855
       Left            =   360
-      TabIndex        =   11
-      Top             =   5880
+      TabIndex        =   12
+      Top             =   6000
       Width           =   5295
    End
 End
@@ -183,7 +199,35 @@ Public Enum eTypeMode
     PersonEdit = 2
 End Enum
 
+Private bIsLoaded               As Boolean
+
 Public TypeMode                 As eTypeMode
+
+Private Sub cmbGenre_GotFocus()
+    lblInfo.Caption = "Ingrese el género de la persona (F/M)"
+End Sub
+
+Private Sub cmbIdDNIType_GotFocus()
+
+    lblInfo.Caption = "Ingrese el tipo de documento"
+
+End Sub
+
+Private Sub cmbLocality_GotFocus()
+    If cmbLocality.Text = "Localidad" Then
+        lblInfo.Caption = "Seleccione una localidad."
+    Else
+        lblInfo.Caption = ""
+    End If
+End Sub
+
+Private Sub cmbState_GotFocus()
+    If cmbState.Text = "Provincia" Then
+        lblInfo.Caption = "Seleccione una provincia."
+    Else
+        lblInfo.Caption = ""
+    End If
+End Sub
 
 Private Sub cmbState_LostFocus()
     Call modDBPersons.LoadLocality(Me)
@@ -223,78 +267,80 @@ Dim sErrorMsg                   As String
 140 End If
 
 150 tmpUserEdit.Person.id_locality = cmbState.ItemData(cmbState.ListIndex)
-151 tmpUserEdit.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
+    'tmpUserEdit.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
 
 160 If cmbGenre.ListIndex = -1 Then
 170     MsgBox "Por favor, debe seleccionar el género de la persona."
 180     Exit Sub
 190 End If
 
-200 If tmpUserEdit.Person.zip_code <= 0 Then
-210     MsgBox "Por favor, debe ingresar el código postal."
-220     Exit Sub
-230 End If
+'     If tmpUserEdit.Person.zip_code <= 0 Then
+'         MsgBox "Por favor, debe ingresar el código postal."
+'         Exit Sub
+'     End If
 
-240 Select Case TypeMode
+200 Select Case TypeMode
 
         Case eTypeMode.None
             'Do nothing
-            
-250     Case eTypeMode.PersonCreate
+
+210     Case eTypeMode.PersonCreate
             Dim tmpUser         As tUser
-260         tmpUser.Person.Name = txtName.Text
-270         tmpUser.Person.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
-280         tmpUser.Person.dni = txtDNI.Text
-290         tmpUser.Person.DateBirth = txtDateBirth.Text
-300         tmpUser.Person.Email = txtEmail.Text
-310         tmpUser.Person.is_argentine = IIf(CBool(chkIsArgentine.Value), True, False)
-320         tmpUser.Person.Genre = cmbGenre.Text
-330         tmpUser.Person.zip_code = GetZipCodeFromLocality(tmpUser, sErrorMsg)
-            tmpUser.Person.id_state = cmbState.ItemData(cmbState.ListIndex)
-            tmpUser.Person.id_locality = cmbLocality.ItemData(cmbLocality.ListIndex)
-531         tmpUser.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
+220         tmpUser.Person.Name = txtName.Text
+230         tmpUser.Person.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
+240         tmpUser.Person.dni = txtDNI.Text
+250         tmpUser.Person.DateBirth = txtDateBirth.Text
+260         tmpUser.Person.email = txtEmail.Text
+270         tmpUser.Person.is_argentine = IIf(CBool(chkIsArgentine.Value), True, False)
+280         tmpUser.Person.Genre = cmbGenre.Text
 
-340         If Not ValidatePersonCreate(tmpUser, sErrorMsg) Then
-350             Call MsgBox(sErrorMsg, vbInformation, "Error, por favor revise la información ingresada.")
-360         Else
-370             If modDBPersons.PersonCreate(tmpUser, sErrorMsg) Then
-380                 Call MsgBox("Nueva persona: '" & tmpUser.Person.Name & "' añadida con éxito.", vbInformation, "¡Exito!")
-390                 frmAbmPersons.Show
-400                 Unload Me
-410             Else
-420                 Call MsgBox(sErrorMsg, vbInformation, "Error al añadir la persona.")
-430             End If
-440         End If
+290         tmpUser.Person.id_state = cmbState.ItemData(cmbState.ListIndex)
+300         tmpUser.Person.id_locality = cmbLocality.ItemData(cmbLocality.ListIndex)
 
-450     Case eTypeMode.PersonEdit
+            'Dejo como opcional el código postal, sin la necesidad de precargarlo en base a la localidad. Requerimiento Tarea - 001
+            'tmpUser.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
 
-460         tmpUserEdit.Person.Name = txtName.Text
-470         tmpUserEdit.Person.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
-480         tmpUserEdit.Person.dni = txtDNI.Text
-490         tmpUserEdit.Person.DateBirth = txtDateBirth.Text
-500         tmpUserEdit.Person.Email = txtEmail.Text
-510         tmpUserEdit.Person.is_argentine = IIf(CBool(chkIsArgentine.Value), True, False)
-520         tmpUserEdit.Person.Genre = cmbGenre.Text
+310         If Not ValidatePersonCreate(tmpUser, sErrorMsg) Then
+320             Call MsgBox(sErrorMsg, vbInformation, "Error, por favor revise la información ingresada.")
+330         Else
+340             If modDBPersons.PersonCreate(tmpUser, sErrorMsg) Then
+350                 Call MsgBox("Nueva persona: '" & tmpUser.Person.Name & "' añadida con éxito.", vbInformation, "¡Exito!")
+360                 frmAbmPersons.Show
+370                 Unload Me
+380             Else
+390                 Call MsgBox(sErrorMsg, vbInformation, "Error al añadir la persona.")
+400             End If
+410         End If
 
-            tmpUserEdit.Person.id_state = cmbState.ItemData(cmbState.ListIndex)
-            tmpUserEdit.Person.id_locality = cmbLocality.ItemData(cmbLocality.ListIndex)
-530         tmpUserEdit.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
-            
-540         If Not ValidatePersonEdit(tmpUserEdit, sErrorMsg) Then
-550             Call MsgBox(sErrorMsg, vbInformation, "Error, revise la información ingresada.")
-560         Else
-570             If modDBPersons.PersonEdit(tmpUserEdit) Then
-580                 Call MsgBox("Los datos de " & tmpUserEdit.Person.Name & " fueron editados con éxito.", vbInformation, "¡Exito!")
-590                 frmAbmPersons.Show
-600                 Me.Hide
-610             Else
-620                 Call MsgBox(sErrorMsg, vbInformation, "Error al editar la persona.")
-630             End If
-640         End If
-650 End Select
+420     Case eTypeMode.PersonEdit
 
-161 Call frmAbmPersons.FormatGrid
-171 Call modDBPersons.LoadPersons
+430         tmpUserEdit.Person.Name = txtName.Text
+440         tmpUserEdit.Person.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
+450         tmpUserEdit.Person.dni = txtDNI.Text
+460         tmpUserEdit.Person.DateBirth = txtDateBirth.Text
+470         tmpUserEdit.Person.email = txtEmail.Text
+480         tmpUserEdit.Person.is_argentine = IIf(CBool(chkIsArgentine.Value), True, False)
+490         tmpUserEdit.Person.Genre = cmbGenre.Text
+
+500         tmpUserEdit.Person.id_state = cmbState.ItemData(cmbState.ListIndex)
+510         tmpUserEdit.Person.id_locality = cmbLocality.ItemData(cmbLocality.ListIndex)
+            'tmpUserEdit.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
+
+520         If Not ValidatePersonEdit(tmpUserEdit, sErrorMsg) Then
+530             Call MsgBox(sErrorMsg, vbInformation, "Error, revise la información ingresada.")
+540         Else
+550             If modDBPersons.PersonEdit(tmpUserEdit) Then
+560                 Call MsgBox("Los datos de " & tmpUserEdit.Person.Name & " fueron editados con éxito.", vbInformation, "¡Exito!")
+570                 frmAbmPersons.Show
+580                 Me.Hide
+590             Else
+600                 Call MsgBox(sErrorMsg, vbInformation, "Error al editar la persona.")
+610             End If
+620         End If
+630 End Select
+
+640 Call frmAbmPersons.FormatGrid
+650 Call modDBPersons.LoadPersons
 
 660 On Error GoTo 0
 670 Exit Sub
@@ -307,6 +353,7 @@ End Sub
 
 Private Sub Form_Activate()
     Call LoadTypeModeForm
+    bIsLoaded = True
 End Sub
 
 Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
@@ -352,6 +399,8 @@ Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y A
     
     Static LastLocality As Long
     
+    lblInfo.Caption = ""
+    
 '    If Len(cmbState.Text) > 0 Or LastLocality <> 0 Then
 '        'Call modDBPersons.LoadLocality(Me)
 '        If frmPerson.cmbLocality.ListIndex >= 0 Then
@@ -359,6 +408,15 @@ Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y A
 '        End If
 '    End If
     
+End Sub
+
+Private Sub lblIsArgentine_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    lblInfo.Caption = "Determina si la persona es de nacionalidad argentina"
+End Sub
+
+Private Sub txtDateBirth_GotFocus()
+    Call CheckTxtControlMouseDown(txtDateBirth)
+    lblInfo.Caption = "Ingrese la fecha de nacimiento de la persona"
 End Sub
 
 Private Sub txtDateBirth_KeyPress(KeyAscii As Integer)
@@ -412,11 +470,18 @@ End Sub
 Private Sub txtDNI_Change()
     If Not modUser.ValidateDNI(txtDNI.Text) Then
         lblInfo.Caption = "El DNI es inválido al parecer."
+    Else
+        lblInfo.Caption = "El DNI parece ser correcto."
     End If
     
     If Len(txtDNI.Text) > 3 Then
         txtDNI.Text = NumberToPunctuatedString(txtDNI.Text)
     End If
+End Sub
+
+Private Sub txtDNI_GotFocus()
+    Call CheckTxtControlMouseDown(txtDNI)
+    lblInfo.Caption = "Ingrese el número de documento."
 End Sub
 
 Private Sub txtDNI_KeyPress(KeyAscii As Integer)
@@ -435,8 +500,32 @@ Private Sub txtDNI_LostFocus()
     Call CheckTxtControlMouseUp(txtDNI)
 End Sub
 
+Private Sub txtEmail_Change()
+    If ValidateEmail(txtEmail.Text) Then
+        lblInfo.Caption = "El e-mail parecer ser válido."
+    Else
+        lblInfo.Caption = "El e-mail es inválido."
+    End If
+End Sub
+
+Private Sub txtEmail_GotFocus()
+    Call CheckTxtControlMouseDown(txtEmail)
+End Sub
+
 Private Sub txtEmail_LostFocus()
     Call CheckTxtControlMouseUp(txtEmail)
+End Sub
+
+Private Sub txtName_GotFocus()
+    If Not bIsLoaded Then
+        Call CheckTxtControlMouseDown(txtName)
+        bIsLoaded = False
+    Else
+        txtName.SelStart = 0
+        txtName.SelLength = Len(txtName.Text)
+        lblInfo.Caption = "Ingrese un nombre y apellido"
+    End If
+    
 End Sub
 
 Private Sub txtName_LostFocus()
@@ -457,4 +546,17 @@ End Sub
 
 Private Sub txtDateBirth_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
     Call CheckTxtControlMouseDown(txtDateBirth)
+End Sub
+
+Private Sub txtZipCode_GotFocus()
+    Call CheckTxtControlMouseDown(txtZipCode)
+    lblInfo.Caption = "Ingrese el Código Postal"
+End Sub
+
+Private Sub txtZipCode_KeyPress(KeyAscii As Integer)
+    If (KeyAscii <> 8) Then
+        If (KeyAscii < 48 Or KeyAscii > 57) Then
+            KeyAscii = 0
+        End If
+    End If
 End Sub

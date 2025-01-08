@@ -12,7 +12,7 @@ Public Type tPerson
     DateBirth                   As String       'Fecha nacimiento
     Genre                       As String * 1   'Género
     is_argentine                As Boolean      'Es argentino?
-    Email                       As String       'Correo electrónico
+    email                       As String       'Correo electrónico
     pic_face                    As Variant      'Foto cara
     id_locality                 As Long         'Localidad
     id_state                    As Long         'Provincia
@@ -278,6 +278,10 @@ Public Function ValidateDNI(ByVal dni As String) As Boolean
 ' Verificar que no esté vacío
     On Error GoTo ValidateDNI_Error
 
+    If InStrB(1, dni, ".") > 0 Then
+        dni = Replace(dni, ".", "")
+    End If
+
 10  If Trim(dni) = "" Then
 20      ValidateDNI = False
 30      Exit Function
@@ -323,7 +327,7 @@ Public Function CheckTxtControlMouseDown(ByRef txtControl As TextBox)
     On Error GoTo CheckTxtControlMouseDown_Error
 
     If txtControl.Text = "Usuario" Or txtControl.Text = "Nombre y apellido" Or txtControl.Text = "DNI" _
-    Or txtControl.Text = "Contraseña" Or txtControl.Text = "E-mail" Or txtControl.Text = "Fecha nacimiento" Then
+    Or txtControl.Text = "Contraseña" Or txtControl.Text = "E-mail" Or txtControl.Text = "Fecha nacimiento" Or txtControl.Text = "Código Postal" Then
         txtControl.Text = vbNullString
     End If
 

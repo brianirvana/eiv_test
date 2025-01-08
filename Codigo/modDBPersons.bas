@@ -31,7 +31,7 @@ Dim RS                          As New ADODB.Recordset
     tmpUserEdit.Person.id_locality = Val(RS.Fields("id_localidad") & vbNullString)
     tmpUserEdit.Person.id_state = Val(RS.Fields("id_provincia") & vbNullString)
     tmpUserEdit.Person.zip_code = Val(RS.Fields("codigo_postal") & vbNullString)
-    tmpUserEdit.Person.Email = RS.Fields("correo_electronico")
+    tmpUserEdit.Person.email = RS.Fields("correo_electronico")
     tmpUserEdit.Person.is_argentine = IIf(CBool(RS.Fields("es_argentino")), True, False)
 
     If tmpUserEdit.Person.id <= 0 Then
@@ -192,6 +192,8 @@ Dim cmbIndex                    As Long
 110     Loop
 120 End If
 
+    tmpForm.cmbIdDNIType.Text = "Tipo de documento"
+
     ' Cerrar el Recordset
 130 RS.Close
 140 Set RS = Nothing
@@ -241,6 +243,8 @@ Dim cmbIndex                    As Long
 110         RS.MoveNext
 120     Loop
 130 End If
+
+    tmpForm.cmbState.Text = "Provincia"
 
     ' Cerrar el Recordset
 140 RS.Close
@@ -340,6 +344,8 @@ Dim cmbIndex                    As Long
 120     Loop
 130 End If
 
+    tmpForm.cmbLocality.Text = "Localidad"
+
     ' Cerrar el Recordset
 140 RS.Close
 150 Set RS = Nothing
@@ -369,7 +375,7 @@ Dim RS                          As ADODB.Recordset
       End If
 
     'Validamos la existencia del correo electrónico
-20  If modDB.Exists("personas", "correo_electronico", tmpUser.Person.Email) Then
+20  If modDB.Exists("personas", "correo_electronico", tmpUser.Person.email) Then
 30      sErrorMsg = "El correo electrónico ya está en uso, por favor utilice otro."
 40      Exit Function
 50  End If
@@ -395,7 +401,7 @@ Dim RS                          As ADODB.Recordset
 
     'Primero insertamos los datos del usuario en la tabla "personas" para garantizar que las claves foráneas requeridas en la tabla "usuarios" (id_tipodocumento, num_documento) existan.
     'Esto evita conflictos de integridad referencial al insertar en la tabla "usuarios".
-190 sQuery = "INSERT INTO personas (id_tipodocumento, num_documento, nombre_apellido, fecha_nacimiento, genero, es_argentino, correo_electronico, id_localidad, codigo_postal)  VALUES ( " & tmpUser.Person.id_dni & "," & tmpUser.Person.dni & ",'" & tmpUser.Person.Name & "','" & FormatDateForMySQL(tmpUser.Person.DateBirth) & "','" & tmpUser.Person.Genre & "'," & IIf(CBool(tmpUser.Person.is_argentine), 1, 0) & ",'" & tmpUser.Person.Email & "'," & tmpUser.Person.id_locality & "," & tmpUser.Person.zip_code & ")"
+190 sQuery = "INSERT INTO personas (id_tipodocumento, num_documento, nombre_apellido, fecha_nacimiento, genero, es_argentino, correo_electronico, id_localidad, codigo_postal)  VALUES ( " & tmpUser.Person.id_dni & "," & tmpUser.Person.dni & ",'" & tmpUser.Person.Name & "','" & FormatDateForMySQL(tmpUser.Person.DateBirth) & "','" & tmpUser.Person.Genre & "'," & IIf(CBool(tmpUser.Person.is_argentine), 1, 0) & ",'" & tmpUser.Person.email & "'," & tmpUser.Person.id_locality & "," & tmpUser.Person.zip_code & ")"
 200 Set RS = cn.Execute(sQuery, , adOpenForwardOnly)
 
 230 PersonCreate = True
@@ -425,7 +431,7 @@ Dim RS                          As ADODB.Recordset
              "fecha_nacimiento = '" & FormatDateForMySQL(tmpUser.Person.DateBirth) & "', " & _
              "genero = '" & tmpUser.Person.Genre & "', " & _
              "es_argentino = " & IIf(CBool(tmpUser.Person.is_argentine), 1, 0) & ", " & _
-             "correo_electronico = '" & tmpUser.Person.Email & "', " & _
+             "correo_electronico = '" & tmpUser.Person.email & "', " & _
              "id_localidad = " & tmpUser.Person.id_locality & ", " & _
              "codigo_postal = '" & tmpUser.Person.zip_code & "' " & _
              "WHERE id = " & tmpUser.Person.id
