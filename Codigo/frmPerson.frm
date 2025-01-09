@@ -144,6 +144,7 @@ Begin VB.Form frmPerson
       ForeColor       =   &H00FFFFFF&
       Height          =   375
       Left            =   1680
+      MaxLength       =   11
       TabIndex        =   2
       Text            =   "DNI"
       Top             =   2400
@@ -308,10 +309,10 @@ Dim sErrorMsg                   As String
 180     Exit Sub
 190 End If
 
-'     If tmpUserEdit.Person.zip_code <= 0 Then
-'         MsgBox "Por favor, debe ingresar el código postal."
-'         Exit Sub
-'     End If
+    '     If tmpUserEdit.Person.zip_code <= 0 Then
+    '         MsgBox "Por favor, debe ingresar el código postal."
+    '         Exit Sub
+    '     End If
 
 200 Select Case TypeMode
 
@@ -332,56 +333,56 @@ Dim sErrorMsg                   As String
 300         tmpUser.Person.Id_Locality = cmbLocality.ItemData(cmbLocality.ListIndex)
 
             'Dejo como opcional el código postal, sin la necesidad de precargarlo en base a la localidad. Requerimiento Tarea - 001
-            'tmpUser.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
+310         tmpUser.Person.zip_code = txtZipCode.Text  'GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
 
-310         If Not ValidatePersonCreate(tmpUser, sErrorMsg) Then
-320             Call MsgBox(sErrorMsg, vbInformation, "Error, por favor revise la información ingresada.")
-330         Else
-340             If modDBPersons.PersonCreate(tmpUser, sErrorMsg) Then
-350                 Call MsgBox("Nueva persona: '" & tmpUser.Person.Name & "' añadida con éxito.", vbInformation, "¡Exito!")
-360                 frmAbmPersons.Show
-370                 Unload Me
-380             Else
-390                 Call MsgBox(sErrorMsg, vbInformation, "Error al añadir la persona.")
-400             End If
-410         End If
+320         If Not ValidatePersonCreate(tmpUser, sErrorMsg) Then
+330             Call MsgBox(sErrorMsg, vbInformation, "Error, por favor revise la información ingresada.")
+340         Else
+350             If modDBPersons.PersonCreate(tmpUser, sErrorMsg) Then
+360                 Call MsgBox("Nueva persona: '" & tmpUser.Person.Name & "' añadida con éxito.", vbInformation, "¡Exito!")
+370                 frmAbmPersons.Show
+380                 Unload Me
+390             Else
+400                 Call MsgBox(sErrorMsg, vbInformation, "Error al añadir la persona.")
+410             End If
+420         End If
 
-420     Case eTypeMode.PersonEdit
+430     Case eTypeMode.PersonEdit
 
-430         tmpUserEdit.Person.Name = txtName.Text
-440         tmpUserEdit.Person.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
-450         tmpUserEdit.Person.dni = txtDNI.Text
-460         tmpUserEdit.Person.DateBirth = txtDateBirth.Text
-470         tmpUserEdit.Person.email = txtEmail.Text
-480         tmpUserEdit.Person.is_argentine = IIf(CBool(chkIsArgentine.Value), True, False)
-490         tmpUserEdit.Person.Genre = cmbGenre.Text
+440         tmpUserEdit.Person.Name = txtName.Text
+450         tmpUserEdit.Person.id_dni = cmbIdDNIType.ItemData(cmbIdDNIType.ListIndex)
+460         tmpUserEdit.Person.dni = txtDNI.Text
+470         tmpUserEdit.Person.DateBirth = txtDateBirth.Text
+480         tmpUserEdit.Person.email = txtEmail.Text
+490         tmpUserEdit.Person.is_argentine = IIf(CBool(chkIsArgentine.Value), True, False)
+500         tmpUserEdit.Person.Genre = cmbGenre.Text
 
-500         tmpUserEdit.Person.id_state = cmbState.ItemData(cmbState.ListIndex)
-510         tmpUserEdit.Person.Id_Locality = cmbLocality.ItemData(cmbLocality.ListIndex)
-            'tmpUserEdit.Person.zip_code = GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
+510         tmpUserEdit.Person.id_state = cmbState.ItemData(cmbState.ListIndex)
+520         tmpUserEdit.Person.Id_Locality = cmbLocality.ItemData(cmbLocality.ListIndex)
+530         tmpUserEdit.Person.zip_code = txtZipCode.Text  'GetZipCodeFromLocality(tmpUserEdit, sErrorMsg)
 
-520         If Not ValidatePersonEdit(tmpUserEdit, sErrorMsg) Then
-530             Call MsgBox(sErrorMsg, vbInformation, "Error, revise la información ingresada.")
-540         Else
-550             If modDBPersons.PersonEdit(tmpUserEdit) Then
-560                 Call MsgBox("Los datos de " & tmpUserEdit.Person.Name & " fueron editados con éxito.", vbInformation, "¡Exito!")
-570                 frmAbmPersons.Show
-580                 Me.Hide
-590             Else
-600                 Call MsgBox(sErrorMsg, vbInformation, "Error al editar la persona.")
-610             End If
-620         End If
-630 End Select
+540         If Not ValidatePersonEdit(tmpUserEdit, sErrorMsg) Then
+550             Call MsgBox(sErrorMsg, vbInformation, "Error, revise la información ingresada.")
+560         Else
+570             If modDBPersons.PersonEdit(tmpUserEdit) Then
+580                 Call MsgBox("Los datos de " & tmpUserEdit.Person.Name & " fueron editados con éxito.", vbInformation, "¡Exito!")
+590                 frmAbmPersons.Show
+600                 Me.Hide
+610             Else
+620                 Call MsgBox(sErrorMsg, vbInformation, "Error al editar la persona.")
+630             End If
+640         End If
+650 End Select
 
-640 Call frmAbmPersons.FormatGrid
-650 Call modDBPersons.LoadPersons
+660 Call frmAbmPersons.FormatGrid
+670 Call modDBPersons.LoadPersons
 
-660 On Error GoTo 0
-670 Exit Sub
+680 On Error GoTo 0
+690 Exit Sub
 
 cmdPersonAction_Click_Error:
 
-680 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento cmdCreatePerson_Click de Formulario frmPerson línea: " & Erl())
+700 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento cmdCreatePerson_Click de Formulario frmPerson línea: " & Erl())
 
 End Sub
 
@@ -512,16 +513,48 @@ txtDateBirth_Change_Error:
     Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento txtDateBirth_Change de Formulario frmPerson línea: " & Erl())
 End Sub
 
+'---------------------------------------------------------------------------------------
+' Procedure : txtDNI_Change
+' Author    : [/About] Brian Sabatier https://github.com/brianirvana
+' Date      : 9/1/2025
+' Purpose   : Deshabilité la función NumberToPunctuatedString hasta pensar una mejor solución.
+'---------------------------------------------------------------------------------------
+'
 Private Sub txtDNI_Change()
-    If Not modUser.ValidateDNI(txtDNI.Text) Then
-        lblInfo.Caption = "El DNI es inválido al parecer."
-    Else
-        lblInfo.Caption = "El DNI parece ser correcto."
-    End If
-    
-    If Len(txtDNI.Text) > 3 Then
-        txtDNI.Text = NumberToPunctuatedString(txtDNI.Text)
-    End If
+
+Static isUpdating               As Boolean
+Dim cursorPosition              As Integer
+
+    On Error GoTo txtDNI_Change_Error
+
+10  If isUpdating Then Exit Sub
+20  isUpdating = True
+
+30  cursorPosition = txtDNI.SelStart
+
+    ' Validar el DNI
+40  If Not modUser.ValidateDNI(txtDNI.Text) Then
+50      lblInfo.Caption = "El DNI es inválido al parecer."
+60  Else
+70      lblInfo.Caption = "El DNI parece ser correcto."
+80  End If
+
+'90  If Len(txtDNI.Text) > 3 Then
+'        Dim formattedText       As String
+'100     formattedText = NumberToPunctuatedString(txtDNI.Text)
+'110     txtDNI.Text = formattedText
+'120     txtDNI.SelStart = cursorPosition + (Len(formattedText) - Len(txtDNI.Text))
+'130 End If
+
+140 isUpdating = False
+
+    On Error GoTo 0
+    Exit Sub
+
+txtDNI_Change_Error:
+
+    Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento txtDNI_Change de Formulario frmPerson línea: " & Erl())
+
 End Sub
 
 Private Sub txtDNI_GotFocus()

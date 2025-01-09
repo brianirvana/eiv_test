@@ -41,6 +41,7 @@ Begin VB.Form frmUserCreate
       ForeColor       =   &H00FFFFFF&
       Height          =   375
       Left            =   1440
+      MaxLength       =   11
       TabIndex        =   3
       Text            =   "DNI"
       Top             =   2280
@@ -221,9 +222,22 @@ Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y A
 End Sub
 
 Private Sub txtDNI_Change()
-    If Len(txtDNI.Text) > 3 Then
-        txtDNI.Text = NumberToPunctuatedString(txtDNI.Text)
+
+    ' Validar el DNI
+    If Not modUser.ValidateDNI(txtDNI.Text) Then
+        lblInfo.Caption = "El DNI es inválido al parecer."
+    Else
+        lblInfo.Caption = "El DNI parece ser correcto."
     End If
+
+'    ' Formatear si tiene más de 3 caracteres
+'    If Len(txtDNI.Text) > 3 Then
+'        txtDNI.Text = NumberToPunctuatedString(txtDNI.Text)
+'
+'        ' Restaurar la posición del cursor ajustada por los puntos añadidos
+'        txtDNI.SelStart = cursorPosition + (Len(txtDNI.Text) - cursorPosition) - Len(NumberToPunctuatedString(Left$(txtDNI.Text, cursorPosition)))
+'    End If
+
 End Sub
 
 Private Sub txtDNI_KeyPress(KeyAscii As Integer)
