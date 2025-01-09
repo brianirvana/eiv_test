@@ -85,7 +85,7 @@ Dim RS                          As New ADODB.Recordset
 520 tmpForm.txtEmail.Text = RS("correo_electronico")
 530 tmpForm.chkIsArgentine.Value = IIf(CBool(RS("es_argentino")), vbChecked, vbUnchecked)
 
-540 If Val(RS.Fields("codigo_postal")) > 0 Then
+540 If Val(RS.Fields("codigo_postal") & vbNullString) > 0 Then
 550     tmpForm.txtZipCode.Text = RS.Fields("codigo_postal") & vbNullString
 560 End If
 
@@ -141,7 +141,7 @@ Dim RS                          As New ADODB.Recordset
 120     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 4) = RS("fecha_nacimiento") & vbNullString
 130     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 5) = RS("genero") & vbNullString
 140     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 6) = RS("localidad") & " - " & RS("provincia")
-150     If Val(RS("codigo_postal")) > 0 Then
+150     If Val(RS("codigo_postal") & vbNullString) > 0 Then
 160         frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 7) = RS("codigo_postal") & vbNullString
 170     End If
 180     frmAbmPersons.MSFlexGrid_Persons.TextMatrix(row, 8) = RS("correo_electronico")
@@ -286,7 +286,7 @@ Dim RS                          As ADODB.Recordset
 40  RS.Open sQuery, cn, adOpenForwardOnly, adLockReadOnly
 
 50  If Not RS.EOF Then
-60      GetZipCodeFromLocality = Val(RS.Fields("codigo_postal"))
+60      GetZipCodeFromLocality = Val(RS.Fields("codigo_postal") & vbNullString)
         RS.Close
         Set RS = Nothing
         Exit Function
@@ -337,7 +337,7 @@ Dim cmbIndex                    As Long
 60  If Not RS.EOF Then
 70      Do While Not RS.EOF
             ' Agregar el ítem al ComboBox con el formato "nombre - abreviatura"
-80          tmpForm.cmbLocality.AddItem RS.Fields("nombre").Value & " - " & RS.Fields("codigo_postal")
+80          tmpForm.cmbLocality.AddItem RS.Fields("nombre").Value & " - " & RS.Fields("codigo_postal") & vbNullString
 
             ' Obtener el índice del ítem agregado
 90          cmbIndex = tmpForm.cmbLocality.NewIndex
