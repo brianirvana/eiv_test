@@ -43,19 +43,22 @@ Dim tmpValues()                 As String
 300 ElseIf CStr(tmpUser.Person.id_state) < 0 Then
 310     sErrorMsg = "Seleccione una provincia"
 320     Exit Function
-330 ElseIf CStr(tmpUser.Person.id_locality) < 0 Then
+330 ElseIf CStr(tmpUser.Person.Id_Locality) < 0 Then
 340     sErrorMsg = "Seleccione una localidad"
 350     Exit Function
-360 End If
+360 ElseIf Not modPerson.ValidateEmail(tmpUser.Person.email) Then
+370     sErrorMsg = "El e-mail tiene un formato incorrecto."
+380     Exit Function
+390 End If
 
-370 ValidatePersonCreate = True
+400 ValidatePersonCreate = True
 
-380 On Error GoTo 0
-390 Exit Function
+410 On Error GoTo 0
+420 Exit Function
 
 ValidatePersonCreate_Error:
 
-400 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidatePersonCreate de Módulo modPerson línea: " & Erl())
+430 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidatePersonCreate de Módulo modPerson línea: " & Erl())
 
 End Function
 
@@ -83,16 +86,19 @@ Dim tmpValues()                 As String
 160 ElseIf Not ValidateDateBirth(tmpUser) Then
 170     sErrorMsg = "La fecha de nacimiento parece ser inválida. Utilice el formato DD/MM/YYYY (Ej: 01/05/2001)"
 180     Exit Function
-190 End If
+190 ElseIf Not modPerson.ValidateEmail(tmpUser.Person.email) Then
+200     sErrorMsg = "El e-mail tiene un formato incorrecto."
+210     Exit Function
+220 End If
 
-200 ValidatePersonEdit = True
+230 ValidatePersonEdit = True
 
-210 On Error GoTo 0
-220 Exit Function
+240 On Error GoTo 0
+250 Exit Function
 
 ValidatePersonEdit_Error:
 
-230 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidatePersonEdit de Módulo modPerson línea: " & Erl())
+260 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidatePersonEdit de Módulo modPerson línea: " & Erl())
 
 End Function
 

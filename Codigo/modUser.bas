@@ -14,7 +14,7 @@ Public Type tPerson
     is_argentine                As Boolean      'Es argentino?
     email                       As String       'Correo electrónico
     pic_face                    As Variant      'Foto cara
-    id_locality                 As Long         'Localidad
+    Id_Locality                 As Long         'Localidad
     id_state                    As Long         'Provincia
     zip_code                    As Long         'Codigo Postal
 End Type
@@ -249,20 +249,23 @@ Dim tmpValues()                 As String
 330 ElseIf tmpUser.Password = "Contraseña" Then
 340     sErrorMsg = "Ingrese una contraseña válida por favor."
 350     Exit Function
-360 End If
-
-370 If Not ValidatePassword(tmpUser.Password, sErrorMsg) Then
+360 ElseIf Not modPerson.ValidateEmail(tmpUser.Person.email) Then
+370     sErrorMsg = "El e-mail tiene un formato incorrecto."
 380     Exit Function
 390 End If
 
-400 ValidateUserCreate = True
+400 If Not ValidatePassword(tmpUser.Password, sErrorMsg) Then
+410     Exit Function
+420 End If
 
-410 On Error GoTo 0
-420 Exit Function
+430 ValidateUserCreate = True
+
+440 On Error GoTo 0
+450 Exit Function
 
 ValidateUserCreate_Error:
 
-430 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidateUserCreate de Módulo modUser línea: " & Erl())
+460 Call Logs.LogError("Error " & Err.Number & " (" & Err.Description & ") en procedimiento ValidateUserCreate de Módulo modUser línea: " & Erl())
 
 End Function
 
